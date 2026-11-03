@@ -1,65 +1,43 @@
-<p align="center"><img src="apps/desktop/public/interlude-logo.svg" width="88" alt="Interlude" /></p>
+<p align="center"><img src="apps/desktop/public/interlude-logo.svg" width="80" alt="Interlude"></p>
 <h1 align="center">Interlude</h1>
-<p align="center">少一点重复操作，多一点专注。<br />一个精简的 Codex 账号管理工具。</p>
-<p align="center"><a href="README_EN.md">English</a> · <b>简体中文</b> · <a href="https://github.com/elorinlabs/Interlude/releases/latest">下载安装</a> · <a href="https://github.com/elorinlabs/Interlude/issues/new">问题反馈</a></p>
-<p align="center"><img alt="Platform" src="https://img.shields.io/badge/Windows-x64-397DA8" /> <img alt="License" src="https://img.shields.io/badge/License-Apache--2.0-6256BD" /> <img alt="Author" src="https://img.shields.io/badge/Author-JingXing-56685D" /></p>
+<p align="center">给 Codex 账号找一个顺手的地方。</p>
+<p align="center">简体中文 · <a href="README_EN.md">English</a> · <a href="https://github.com/elorinlabs/Interlude/releases/latest">下载安装</a></p>
 
-Interlude 帮你集中管理 Codex 账号、查看额度、切换账号和备份登录信息。它启动并配合已安装的官方 Codex，围绕账号操作减少重复步骤。
+账号多了，来回登录、查看额度、找备份都挺费时间。Interlude 把这些事放到一个窗口里，让你少做几遍重复操作。
 
-**当前发布：Windows x64。作者：JingXing。** 应用提供中文和英文等语言选择；本页与 [English guide](README_EN.md) 分别提供完整使用说明。
+![Interlude 主界面，演示数据](docs/screenshots/dashboard.png)
 
+## 可以做什么
 
-首页可切换简体中文／English，并选择原色、墨蓝商务、暖砂极简、松绿雅致四套配色。选择会保留，并同步到桌面小组件。
+- 添加账号：浏览器登录、无痕登录，或者导入已有凭据文件；重复账号会合并。
+- 切换账号和启动 Codex，继续使用本机的对话目录。
+- 查看五小时和周额度、恢复时间及账号健康状态，也可以开启桌面额度小组件。
+- 查看本机可读取的 Token 使用记录，批量检查账号。
+- 按需保存登录信息，凭据失效后尝试恢复授权，并显示当前进度。
+- 使用离线加密文件备份账号、已保存密码和验证器密钥；也可以选择本地或网盘客户端同步文件夹。
+- 在首页切换中文／英文，并选择四套配色。
 
-## 能做什么
+## 自动化
 
-| 功能 | 说明 |
-| --- | --- |
-| 添加与合并 | 浏览器授权、无痕登录、已有凭据文件导入；重复账号合并 |
-| 切换与启动 | 手动切换账号、启动官方 Codex，继续使用同一本地对话目录 |
-| 账号健康 | 单个或批量检查、修复入口、保存登录信息后的授权恢复与进度提示 |
-| 额度可视化 | 五小时与周剩余额度、服务方返回的恢复时间、当前账号后台更新 |
-| 桌面小组件 | 独立显示当前账号的五小时和周额度，可在首页开关 |
-| Token 历史 | 汇总本机可读取的历史用量，按时间与账号查看明细 |
-| 可选自动化 | 按额度恢复时间安排问候、现有目标接力；需主动配置开启 |
-| 完整备份 | 单个加密文件备份／恢复账号、已保存的密码、验证器密钥和自动登录信息 |
-| 目录备份 | 本地、移动硬盘或网盘客户端同步目录，不需要旧同步服务器 |
+![自动化设置界面，演示数据](docs/screenshots/automation.png)
 
-Token 统计以本机可读取的记录为准，不能补全服务方未提供的其他设备或账号终身用量。自动登录遇到服务方人工验证时仍需本人完成。反重力实现源码保留，当前入口关闭。
+可以按需开启额度恢复问候，或设置目标接力。接力会切换账号并重新打开原对话；切换可能中断 Codex 正在执行的其他任务。自动化需要先由你配置。
 
-## 安装与开始使用
+## 安装
 
-1. 前往 [Releases](https://github.com/elorinlabs/Interlude/releases/latest)，下载 `Interlude_*_x64-setup.exe`。
-2. 可将下载文件的 SHA-256 与发布页 `SHA256SUMS.txt` 核对。当前安装包未做代码签名；Windows 可能提示未知发布者，请确认来源后自行决定安装。
-3. 安装并打开 Interlude。请先安装官方 Codex，再通过浏览器授权或导入已有凭据添加账号。
-4. 查看账号状态，按需切换或启动 Codex。已有账号数据应先做一次完整备份。
+从 [Releases](https://github.com/elorinlabs/Interlude/releases/latest) 下载 Windows x64 安装包。安装前请备份已有账号数据；首次使用需要另行安装官方 Codex。安装包目前未签名，可使用发布页的 `SHA256SUMS.txt` 核对文件。
 
-Interlude 使用独立应用标识，可与原工具共存；实际系统兼容性以发布说明和你的测试为准。安装完成不会自动导入其他工具的全部数据。
+## 备份和恢复
 
-## 备份最省事的做法
+在「备份与恢复」中选择离线完整备份，设置至少 12 位的密码并保存文件。重装系统或换电脑后，用同一文件和密码恢复。请把文件放在不会被格式化的地方，密码另行保管；没有保存过的密码或验证器密钥无法从验证码还原。
 
-打开 **备份与恢复 → 离线完整备份**，设置至少 12 位的备份密码，保存一个 `.interlude-backup` 文件。换电脑或重装后，用原文件和原密码合并恢复。
+[离线备份说明](docs/offline-backup.md) · [目录备份说明](docs/local-cloud-sync.md) · [安全说明](SECURITY.md)
 
-- 包含已保存的账号凭据、密码、验证器原始密钥和自动登录配置；没有保存过的信息无法补出。
-- 文件放在不会随系统重装丢失的地方，密码单独保管；丢失密码无法重置。
-- 想自动备份，可选网盘客户端的本地同步目录。预设包括坚果云、百度网盘、阿里云盘、夸克、微云、123 云盘和 OneDrive；上传由网盘客户端负责，不是这些网盘的直接 API 接入。
-- 旧 `.cs` 文件只保留导入兼容，新备份使用完整加密格式。
-
-详细说明：[完整离线备份](docs/offline-backup.md) · [目录与网盘备份](docs/local-cloud-sync.md)。
-
-## 常见问题
-
-**切换后对话还在吗？** 账号切换沿用本地 Codex 对话目录，不会把服务方账号数据迁移到另一个账号，也不能保证所有账号都能访问同一云端资源。切换会中断官方应用中正在运行的任务，请留意界面状态。
-
-**为什么恢复后还需要验证？** 备份恢复已保存的数据；服务方可以让令牌失效或要求人工验证，无法保证永久登录。
-
-**所有功能都需要服务器吗？** 当前账号管理与备份不需要原来的账号同步服务器。登录、额度查询、Codex 请求以及你选择的网盘同步仍依赖各自服务。
-
-**安全吗？** 自动登录信息由系统凭据库保存，完整备份加密包含密码和 TOTP。请保护 Windows 账号、备份密码和恢复密钥。公开反馈前务必脱敏。见 [安全说明](SECURITY.md)。
+服务方可能要求重新登录或人工验证。Token 记录以本机可读取的数据为准，不代表账号跨设备的完整历史。
 
 ## 从源码运行
 
-需要 Node.js 22+、npm、Rust stable，以及 Windows Tauri 开发环境（MSVC C++ 工具链和 WebView2）。
+需要 Node.js、Rust、Windows MSVC 构建工具和 WebView2。
 
 ```powershell
 git clone https://github.com/elorinlabs/Interlude.git
@@ -68,24 +46,8 @@ npm ci
 npm run dev:app
 ```
 
-仅前端预览使用 `npm run dev`，不具备本机凭据和进程权限。
+构建安装包：`node scripts/build-desktop-app.mjs --bundles nsis`。
 
-```powershell
-npm run build
-npm run check:i18n
-node scripts/build-desktop-app.mjs --bundles nsis
-```
+作者：JingXing · [Apache-2.0](LICENSE) · [许可证说明](NOTICE)
 
-默认 build/test/check 面向当前桌面工具。仓库仍保留其他工作区及其共享代码以维持依赖关系；它们不代表当前安装包开放了内置聊天、代理或远程桌面功能。可选 VC-LTL / YY-Thunks 构建工具不随源码分发。
-
-## 文档与参与
-
-[安全说明](SECURITY.md)
-
-当前清理版本的桌面 1,287 项测试、18 项原生备份测试及编译检查通过；这不等于对所有真实账号、所有 Codex 版本和跨电脑恢复完成验收。已有编译警告仍在。
-
-## 来源与许可
-
-基于 [piperhex/remoteai](https://github.com/piperhex/remoteai) 精简修改，按 [Apache-2.0](LICENSE) 分发，归属说明见 [NOTICE](NOTICE)。保留上游及第三方许可证。目标仓库初始 MIT 文件另存为 [历史许可证](docs/licenses/repository-initial-MIT.txt)。
-
-Interlude 是独立社区工具，与 OpenAI 无隶属关系，也不是官方 Codex 产品。相关商标归各自所有者所有。
+Interlude 是独立社区工具，非 OpenAI 官方产品。截图使用演示数据。
