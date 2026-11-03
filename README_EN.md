@@ -8,6 +8,9 @@ Interlude brings Codex account management, quota visibility, account switching a
 
 **Current release: Windows x64. Author: JingXing.** The app offers Chinese and English among its language choices. This guide and the [Chinese guide](README.md) cover the same workflows.
 
+
+Switch between Chinese and English on the home screen. Choose Original, Navy office, Warm sand or Quiet sage; preferences persist and synchronize with the desktop widget.
+
 ## Features
 
 | Feature | What it does |

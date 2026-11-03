@@ -528,5 +528,11 @@
   "accountsOnly.backup.rollbackError": "Login-setting rollback failed; recovery is incomplete. Keep the pre-restore backup and check the OS credential store.",
   "accountsOnly.backup.busyError": "An account switch or backup is in progress. Retry shortly.",
   "accountsOnly.folderSync.error.vault": "The OS credential store could not be fully read or written. Unlock it and retry.",
-  "accountsOnly.folderSync.error.rollback": "Login-setting rollback failed; recovery is incomplete. Keep the pre-restore backup and check the OS credential store."
+  "accountsOnly.folderSync.error.rollback": "Login-setting rollback failed; recovery is incomplete. Keep the pre-restore backup and check the OS credential store.",
+  "accountsOnly.appearance.language": "Language",
+  "accountsOnly.appearance.palette": "Palette",
+  "accountsOnly.appearance.original": "Original · Lemon ice",
+  "accountsOnly.appearance.navy": "Navy office",
+  "accountsOnly.appearance.sand": "Warm sand",
+  "accountsOnly.appearance.sage": "Quiet sage"
 }

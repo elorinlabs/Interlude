@@ -4,8 +4,10 @@ import {useLanguage} from '../hooks/useLanguage';
 import {AccountQuota} from './AccountQuota';
 import {closeWidget,getWidget,showManager,subscribeAutomation,type WidgetSnapshot} from './automationApi';
 import {ModelQuotas} from './ModelQuotas';
+import {useAccountTheme} from './useAccountTheme';
 
 export default function AccountWidget(){
+  useAccountTheme();
   const {t}=useLanguage();const [state,setState]=useState<WidgetSnapshot|null>(null);const [error,setError]=useState(false);
   const loading=useRef(false);
   const load=useCallback(async()=>{if(loading.current)return;loading.current=true;try{setState(await getWidget());setError(false);}catch{setError(true);}finally{loading.current=false;}},[]);

@@ -77,6 +77,12 @@ export interface MessageParams1 {
   "accountsOnly.antigravity.waitingLogin": Record<string, never>;
   "accountsOnly.antigravity.widgetHint": Record<string, never>;
   "accountsOnly.antigravity.widgetModels": Record<string, never>;
+  "accountsOnly.appearance.language": Record<string, never>;
+  "accountsOnly.appearance.navy": Record<string, never>;
+  "accountsOnly.appearance.original": Record<string, never>;
+  "accountsOnly.appearance.palette": Record<string, never>;
+  "accountsOnly.appearance.sage": Record<string, never>;
+  "accountsOnly.appearance.sand": Record<string, never>;
   "accountsOnly.automation.loadFailed": Record<string, never>;
   "accountsOnly.automation.save": Record<string, never>;
   "accountsOnly.automation.saveFailed": Record<string, never>;
@@ -194,10 +200,4 @@ export interface MessageParams1 {
   "accountsOnly.folderSync.provider.onedrive": Record<string, never>;
   "accountsOnly.folderSync.provider.other": Record<string, never>;
   "accountsOnly.folderSync.provider.quark": Record<string, never>;
-  "accountsOnly.folderSync.provider.weiyun": Record<string, never>;
-  "accountsOnly.folderSync.restore": Record<string, never>;
-  "accountsOnly.folderSync.restored": { "count": string | number };
-  "accountsOnly.folderSync.restoreFrom": Record<string, never>;
-  "accountsOnly.folderSync.restoreHint": Record<string, never>;
-  "accountsOnly.folderSync.restoreTitle": Record<string, never>;
 }

@@ -528,5 +528,11 @@
   "accountsOnly.backup.rollbackError": "ログイン設定のロールバックに失敗しました。復元前のコピーを保管し、OS資格情報庫を確認してください。",
   "accountsOnly.backup.busyError": "アカウント切替またはバックアップ処理中です。後でもう一度お試しください。",
   "accountsOnly.folderSync.error.vault": "OS資格情報庫の読み書きが完了しませんでした。ロック解除後に再試行してください。",
-  "accountsOnly.folderSync.error.rollback": "ログイン設定のロールバックに失敗しました。復元前のコピーを保管し、OS資格情報庫を確認してください。"
+  "accountsOnly.folderSync.error.rollback": "ログイン設定のロールバックに失敗しました。復元前のコピーを保管し、OS資格情報庫を確認してください。",
+  "accountsOnly.appearance.language": "言語",
+  "accountsOnly.appearance.palette": "配色",
+  "accountsOnly.appearance.original": "オリジナル · レモンアイス",
+  "accountsOnly.appearance.navy": "ネイビー",
+  "accountsOnly.appearance.sand": "ウォームサンド",
+  "accountsOnly.appearance.sage": "セージ"
 }

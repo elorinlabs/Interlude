@@ -528,5 +528,11 @@
   "accountsOnly.backup.rollbackError": "恢复登录配置时回滚失败，操作未完成。请保留恢复前的备份，并检查系统凭据库。",
   "accountsOnly.backup.busyError": "账号正在切换或备份正在处理，请稍后重试。",
   "accountsOnly.folderSync.error.vault": "无法完整读写系统凭据库，操作未完成。请解锁系统凭据库后重试。",
-  "accountsOnly.folderSync.error.rollback": "恢复登录配置时回滚失败，操作未完成。请保留恢复前的备份，并检查系统凭据库。"
+  "accountsOnly.folderSync.error.rollback": "恢复登录配置时回滚失败，操作未完成。请保留恢复前的备份，并检查系统凭据库。",
+  "accountsOnly.appearance.language": "语言",
+  "accountsOnly.appearance.palette": "配色",
+  "accountsOnly.appearance.original": "原色 · 柠檬冰蓝",
+  "accountsOnly.appearance.navy": "墨蓝商务",
+  "accountsOnly.appearance.sand": "暖砂极简",
+  "accountsOnly.appearance.sage": "松绿雅致"
 }

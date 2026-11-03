@@ -5,6 +5,7 @@ import AccountWidget from './accountsOnly/AccountWidget';
 import 'antd/dist/reset.css';
 import './accountsOnly/glass.css';
 import './accountsOnly/polish.css';
+import './accountsOnly/appearance.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>{window.location.hash === '#account-widget' ? <AccountWidget /> : <App />}</React.StrictMode>,

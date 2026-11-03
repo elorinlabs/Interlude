@@ -1,0 +1,37 @@
+.appearance-controls { display:flex; align-items:center; flex-wrap:wrap; gap:12px 24px; margin:0 0 16px; color:var(--muted); font-size:12px; }
+.language-control { display:flex; align-items:center; gap:10px; }
+.language-control select { font:inherit; color:var(--ink); background:#ffffffb8; border:1px solid #73818b40; border-radius:8px; padding:8px 28px 8px 10px; cursor:pointer; }
+.palette-control { display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin:0; padding:0; border:0; min-width:0; }
+.palette-control legend { float:left; width:auto; margin:0 10px 0 0; padding:9px 0; font-size:12px; }
+.palette-option { display:flex; align-items:center; gap:7px; padding:8px 10px; border-radius:8px; border:1px solid transparent; background:transparent; color:var(--muted); font:inherit; cursor:pointer; min-height:36px; }
+.palette-option:hover { background:#ffffff7a; color:var(--ink); }
+.palette-option[aria-pressed="true"] { color:var(--ink); background:#ffffffb8; border-color:var(--accent); }
+.palette-swatch { width:14px; height:14px; border-radius:4px; background:#426f80; box-shadow:inset 0 0 0 1px #00000012; }
+.palette-navy .palette-swatch { background:#304d73; }
+.palette-sand .palette-swatch { background:#765b40; }
+.palette-sage .palette-swatch { background:#3f6659; }
+:root[data-account-theme="navy"] { --ink:#24354b; --muted:#596a7d; --accent:#304d73; --theme-start:#f0f3f8; --theme-end:#dce6f1; --theme-surface:#f7f9fc; --theme-active:#e1e9f4; --theme-track:#bdcbdc; }
+:root[data-account-theme="sand"] { --ink:#3f352c; --muted:#746453; --accent:#765b40; --theme-start:#f8f5ee; --theme-end:#e8e0d4; --theme-surface:#fcfaf6; --theme-active:#eee4d5; --theme-track:#d4c4af; }
+:root[data-account-theme="sage"] { --ink:#293e35; --muted:#586e63; --accent:#3f6659; --theme-start:#f2f6f1; --theme-end:#dae6de; --theme-surface:#f7faf6; --theme-active:#e0ece3; --theme-track:#b9cfc2; }
+:root[data-account-theme]:not([data-account-theme="original"]) { background:var(--theme-start); color:var(--ink); }
+:root[data-account-theme]:not([data-account-theme="original"]) .accounts-app,
+:root[data-account-theme]:not([data-account-theme="original"]) .usage-widget { background:linear-gradient(125deg,var(--theme-start),var(--theme-end)); color:var(--ink); }
+:root[data-account-theme]:not([data-account-theme="original"]) .accounts-app::before,
+:root[data-account-theme]:not([data-account-theme="original"]) .accounts-app::after { display:none; }
+:root[data-account-theme]:not([data-account-theme="original"]) .accounts-intro .ant-btn { background:var(--accent); border-color:var(--accent); box-shadow:0 5px 14px #253b4814; }
+:root[data-account-theme]:not([data-account-theme="original"]) .accounts-intro .ant-btn:hover { background:var(--accent) !important; filter:brightness(1.1); }
+:root[data-account-theme]:not([data-account-theme="original"]) .active-account { background:linear-gradient(110deg,var(--theme-active),#ffffff80); box-shadow:inset 2px 0 var(--accent); }
+:root[data-account-theme]:not([data-account-theme="original"]) .account-name-line strong,
+:root[data-account-theme]:not([data-account-theme="original"]) .quota-available .quota-value,
+:root[data-account-theme]:not([data-account-theme="original"]) .account-notice { color:var(--ink); }
+:root[data-account-theme]:not([data-account-theme="original"]) .account-secondary,
+:root[data-account-theme]:not([data-account-theme="original"]) .quota-label,
+:root[data-account-theme]:not([data-account-theme="original"]) .quota-reset-time,
+:root[data-account-theme]:not([data-account-theme="original"]) .conversation-continuity { color:var(--muted); }
+:root[data-account-theme]:not([data-account-theme="original"]) .quota-track { background:var(--theme-track); }
+:root[data-account-theme]:not([data-account-theme="original"]) .quota-available .quota-track > span { background:var(--accent); }
+:root[data-account-theme]:not([data-account-theme="original"]) .ant-modal .ant-modal-content { background:var(--theme-surface) !important; color:var(--ink); }
+:root[data-account-theme]:not([data-account-theme="original"]) ::selection { background:var(--theme-track); color:var(--ink); }
+:root[data-account-theme] :focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+@media(max-width:560px) { .appearance-controls { align-items:flex-start; gap:12px; } .palette-control { width:100%; } .palette-option { padding-inline:8px; } }
+@media(prefers-reduced-transparency:reduce) { :root[data-account-theme]:not([data-account-theme="original"]) .accounts-glass-panel { background:var(--theme-surface); backdrop-filter:none; } }

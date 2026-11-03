@@ -16,9 +16,12 @@ import { useLocalAutomation } from './useLocalAutomation';
 import { AutomationModal } from './AutomationModal';
 import { RecoveryProgress } from './RecoveryProgress';
 import { TokenHistoryModal } from './TokenHistoryModal';
+import { AppearanceControls } from './AppearanceControls';
+import { useAccountTheme } from './useAccountTheme';
 
 export function AccountManagerApp() {
-  const { t } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
+  const { theme, setTheme, colors } = useAccountTheme();
   const [notice, setNotice] = useState('');
   const timer = useRef<ReturnType<typeof setTimeout>>();
   const notify = useCallback((message: string) => {
@@ -66,7 +69,7 @@ export function AccountManagerApp() {
   });
 
   return <ConfigProvider theme={{ token: {
-    colorPrimary: '#315f74', borderRadius: 12, fontSize: 14, colorText: '#233b49',
+    colorPrimary: colors.accent, borderRadius: 12, fontSize: 14, colorText: colors.ink,
     colorBgContainer: '#ffffffb8', colorBorder: '#ffffffb3', fontFamily: 'Inter, Segoe UI, Microsoft YaHei, sans-serif',
   }, components: { Modal: { contentBg: '#f7fbf3d9', headerBg: 'transparent' } } }}>
     <div className="accounts-app">
@@ -102,6 +105,7 @@ export function AccountManagerApp() {
         <p className="conversation-continuity" title={t('accountsOnly.continuityHint')}>
           <Check size={14} />{t('accountsOnly.continuity')}
         </p>
+        <AppearanceControls language={language} onLanguage={setLanguage} theme={theme} onTheme={setTheme} t={t} />
         <div className="accounts-preferences">
           <Button type="text" onClick={()=>setTokensOpen(true)}>{t('accountsOnly.tokens.title')}</Button>
           <label><Switch size="small" checked={Boolean(automation.state?.config.widgetEnabled)}

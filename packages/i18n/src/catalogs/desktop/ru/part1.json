@@ -528,5 +528,11 @@
   "accountsOnly.backup.rollbackError": "Откат настроек входа не удался. Сохраните страховочную копию и проверьте системное хранилище.",
   "accountsOnly.backup.busyError": "Идёт переключение аккаунта или резервирование. Повторите позже.",
   "accountsOnly.folderSync.error.vault": "Не удалось полностью прочитать или записать системное хранилище. Разблокируйте его и повторите.",
-  "accountsOnly.folderSync.error.rollback": "Откат настроек входа не удался. Сохраните страховочную копию и проверьте системное хранилище."
+  "accountsOnly.folderSync.error.rollback": "Откат настроек входа не удался. Сохраните страховочную копию и проверьте системное хранилище.",
+  "accountsOnly.appearance.language": "Язык",
+  "accountsOnly.appearance.palette": "Палитра",
+  "accountsOnly.appearance.original": "Оригинал · Лимон и лёд",
+  "accountsOnly.appearance.navy": "Деловой синий",
+  "accountsOnly.appearance.sand": "Тёплый песок",
+  "accountsOnly.appearance.sage": "Шалфей"
 }
