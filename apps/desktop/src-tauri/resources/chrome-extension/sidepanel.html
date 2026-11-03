@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Interlude</title>
+  <link rel="stylesheet" href="panel-theme.css">
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <header class="toolbar">
+    <div class="brand"><img src="icon.png" alt=""><span>Interlude</span></div>
+    <nav aria-label="侧边栏工具" data-i18n-aria-label="sidePanelTools">
+      <button id="reload" aria-label="重新加载聊天" title="重新加载聊天"
+        data-i18n-aria-label="reloadChat" data-i18n-title="reloadChat">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M20 12a8 8 0 1 0-2.3 5.7M20 7v5"/></svg>
+      </button>
+      <a id="open-web" href="https://codex.onepiper.cloud/web/" target="_blank" rel="noopener noreferrer"
+        aria-label="在新标签页打开" title="在新标签页打开"
+        data-i18n-aria-label="openInNewTab" data-i18n-title="openInNewTab">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4 10 14M10 4H4v16h16v-6"/></svg>
+      </a>
+      <button id="settings-toggle" aria-label="浏览器助手设置" title="浏览器助手设置"
+        data-i18n-aria-label="settingsTitle" data-i18n-title="settingsTitle"
+        aria-controls="settings" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 7h16M4 17h16M8 4v6M16 14v6"/>
+        </svg>
+      </button>
+    </nav>
+  </header>
+  <main>
+    <p id="loading" role="status" data-i18n="chatOpening">正在打开聊天…</p>
+    <iframe id="chat" title="Interlude 聊天" data-i18n-title="chatFrameTitle" referrerpolicy="no-referrer"
+      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
+      allow="microphone; clipboard-write"></iframe>
+    <iframe id="settings" title="浏览器助手设置" data-i18n-title="settingsTitle" hidden></iframe>
+  </main>
+  <script type="module" src="sidepanel.js"></script>
+</body>
+</html>

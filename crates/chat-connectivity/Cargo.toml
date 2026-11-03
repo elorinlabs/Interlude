@@ -1,0 +1,50 @@
+[package]
+name = "csw-chat-connectivity"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+
+[lib]
+crate-type = ["rlib", "staticlib", "cdylib"]
+
+[workspace]
+members = ["vendor/easytier-core"]
+resolver = "2"
+
+[dependencies]
+base64 = "0.22"
+flate2 = "1"
+easytier = { git = "https://github.com/EasyTier/EasyTier", rev = "ed73d318bb3bf19601e227ab83dd61d66ce4b9f8", default-features = false, features = ["aes-gcm", "smoltcp", "upnp", "tcp-hole-punch", "dns-resolver"] }
+easytier-core = { git = "https://github.com/EasyTier/EasyTier", rev = "ed73d318bb3bf19601e227ab83dd61d66ce4b9f8", default-features = false, features = ["aes-gcm", "proxy-smoltcp-stack", "tcp-hole-punch"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tokio = { version = "1", features = ["rt-multi-thread", "time", "sync", "net", "macros", "io-util", "signal"] }
+url = "2"
+network-interface = "2.0.5"
+async-trait = "0.1"
+rand = "0.9"
+turn = "0.17.2"
+webrtc-util = { version = "0.17.2", features = ["conn"] }
+
+[dev-dependencies]
+webrtc = "0.17.1"
+bytes = "1"
+
+[dependencies.easytier-proto]
+git = "https://github.com/EasyTier/EasyTier"
+rev = "ed73d318bb3bf19601e227ab83dd61d66ce4b9f8"
+default-features = false
+features = ["core"]
+
+[target.'cfg(target_os = "android")'.dependencies]
+jni = "0.21"
+
+[target.'cfg(windows)'.dependencies]
+netdev = "0.31"
+hickory-proto = "0.25.2"
+socket2 = "0.6"
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_NetworkManagement_IpHelper", "Win32_NetworkManagement_Ndis", "Win32_Networking_WinSock"] }
+
+[patch."https://github.com/EasyTier/EasyTier"]
+easytier-core = { path = "vendor/easytier-core" }

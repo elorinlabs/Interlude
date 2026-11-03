@@ -1,0 +1,9 @@
+{
+  "ios": {
+    "NSCameraUsageDescription": "Allow Interlude to take photos and scan QR codes",
+    "NSPhotoLibraryUsageDescription": "Allow Interlude to choose photos to send in chat",
+    "NSPhotoLibraryAddUsageDescription": "Allow Interlude to save images to Photos",
+    "NSMotionUsageDescription": "Allow Interlude to rotate images to match your phone’s orientation",
+    "NSLocalNetworkUsageDescription": "Allow Interlude to connect to computers on the same network for chat and remote desktop"
+  }
+}

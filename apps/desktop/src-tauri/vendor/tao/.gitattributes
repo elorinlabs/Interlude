@@ -1,0 +1,2 @@
+# Preserve upstream's Unix newlines for reproducible patches and rustfmt checks.
+* text eol=lf

@@ -1,0 +1,14 @@
+/* Match the mobile/Web app's light palette. The embedded chat owns its saved theme preference. */
+:root {
+  color-scheme: light;
+  font: 14px/1.5 system-ui, "Microsoft YaHei", sans-serif;
+  --panel-canvas: #f4f7f5;
+  --panel-surface: #fff;
+  --panel-ink: #17251f;
+  --panel-muted: #718079;
+  --panel-border: #dfe8e3;
+  --panel-accent: #0b9b7c;
+  --panel-accent-soft: #e7f6f0;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }

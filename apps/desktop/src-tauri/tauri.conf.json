@@ -1,0 +1,88 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Interlude",
+  "version": "2.3.12",
+  "identifier": "dev.interlude.accounts",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://127.0.0.1:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "macOSPrivateApi": true,
+    "windows": [
+      {
+        "title": "Interlude",
+        "width": 1040,
+        "height": 720,
+        "minWidth": 760,
+        "minHeight": 580,
+        "maxWidth": 1280,
+        "maxHeight": 900,
+        "center": true,
+        "backgroundThrottling": "disabled",
+        "additionalBrowserArgs": "--disable-background-timer-throttling --disable-renderer-backgrounding --disable-backgrounding-occluded-windows",
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": {
+        "default-src": "'self'",
+        "script-src": "'self' 'wasm-unsafe-eval'",
+        "img-src": "'self' data: blob: http: https:",
+        "style-src": "'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "font-src": "'self' https://fonts.gstatic.com",
+        "frame-src": "'self' http://127.0.0.1:*",
+        "object-src": "http://127.0.0.1:*",
+        "media-src": "'self' blob: http://127.0.0.1:*",
+        "worker-src": "'self' blob:",
+        "connect-src": "'self' ipc: http://ipc.localhost https://api.github.com ws: wss:"
+      }
+    }
+  },
+  "plugins": {},
+  "bundle": {
+    "active": true,
+    "createUpdaterArtifacts": false,
+    "targets": [
+      "nsis"
+    ],
+    "resources": {
+      "../../../LICENSE": "LICENSE.txt"
+    },
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "category": "DeveloperTool",
+    "shortDescription": "Manage and switch multiple Codex accounts",
+    "longDescription": "A local-first manager for Codex auth.json files and account usage windows.",
+    "windows": {
+      "wix": {
+        "version": "2.2.1",
+        "upgradeCode": "dc9a33d1-7af5-4f27-a528-2fe930b25641"
+      },
+      "nsis": {
+        "installerIcon": "icons/icon.ico",
+        "uninstallerIcon": "icons/icon.ico"
+      }
+    },
+    "macOS": {
+      "entitlements": "Entitlements.plist",
+      "files": {
+        "Resources/en.lproj/InfoPlist.strings": "locales/en.lproj/InfoPlist.strings",
+        "Resources/ru.lproj/InfoPlist.strings": "locales/ru.lproj/InfoPlist.strings",
+        "Resources/ja.lproj/InfoPlist.strings": "locales/ja.lproj/InfoPlist.strings",
+        "Resources/zh-Hans.lproj/InfoPlist.strings": "locales/zh-Hans.lproj/InfoPlist.strings",
+        "Resources/zh-Hant.lproj/InfoPlist.strings": "locales/zh-Hant.lproj/InfoPlist.strings"
+      },
+      "minimumSystemVersion": "10.13",
+      "signingIdentity": "-"
+    }
+  }
+}

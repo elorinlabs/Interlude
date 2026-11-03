@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN" class="settings">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="settingsTitle">浏览器助手设置</title>
+  <link rel="stylesheet" href="ui.css"><link rel="stylesheet" href="panel-theme.css">
+  <link rel="stylesheet" href="panel-settings.css">
+</head>
+<body>
+  <header><div><h1 data-i18n="assistantName">浏览器助手</h1><p data-i18n="popupSubtitle">管理连接和网站访问权限</p></div></header>
+  <p id="status" role="status" data-i18n="statusChecking">正在检查连接…</p>
+  <p id="error" role="alert" hidden></p>
+  <div class="buttons"><button id="connect" data-i18n="reconnect">重新连接</button><button id="pause" data-i18n="pauseControl">暂停控制</button></div>
+  <div class="name-field">
+    <label for="name" data-i18n="browserNameLabel">浏览器名称</label>
+    <div class="name-controls">
+      <input id="name" maxlength="60" placeholder="例如：工作 Chrome" data-i18n-placeholder="browserNamePlaceholder">
+      <button id="save-name" class="secondary" data-i18n="save">保存</button>
+    </div>
+  </div>
+  <div class="sites">
+    <section class="site-access">
+      <label for="allow-all"><span data-i18n="allowAllSites">允许所有网站</span><input id="allow-all" type="checkbox" role="switch"></label>
+      <p class="hint" data-i18n="allowAllSitesHint">开启后无需逐站确认，关闭后可按网站授权。</p>
+    </section>
+    <div id="site-details">
+      <section><h2 data-i18n="pendingSites">待确认的网站</h2><div id="requests"></div></section>
+      <section><h2 data-i18n="allowedSites">已允许的网站</h2><div id="origins"></div></section>
+    </div>
+  </div>
+  <p class="hint" data-i18n="popupFooterHint">只会操作你允许的网站。你可以随时暂停控制或撤销许可。</p>
+  <script type="module" src="popup.js"></script>
+</body></html>

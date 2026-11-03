@@ -1,0 +1,4 @@
+LIBRARY desktop-unlock
+EXPORTS
+  DllGetClassObject PRIVATE
+  DllCanUnloadNow PRIVATE

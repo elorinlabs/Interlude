@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title data-i18n="approvalTitle">允许访问网站</title><link rel="stylesheet" href="ui.css"></head>
+<body class="approval">
+  <header><img src="icon.png" alt=""><div><h1 data-i18n="approvalHeading">允许访问这个网站？</h1><p data-i18n="extensionName">Interlude 浏览器助手</p></div></header>
+  <p data-i18n="approvalDescription">允许 Interlude 查看这个网站，并按你的要求点击、输入和截图。</p>
+  <p id="origin" class="origin" data-i18n="approvalLoading">正在读取请求…</p>
+  <p id="error" role="alert" hidden></p>
+  <div class="stack">
+    <button data-decision="session" data-i18n="allowSession">本次浏览器会话允许</button>
+    <button data-decision="always" class="secondary" data-i18n="allowAlways">始终允许这个网站</button>
+    <button data-decision="deny" class="secondary" data-i18n="denyAccess">不允许</button>
+  </div>
+  <script type="module" src="approval.js"></script>
+</body></html>

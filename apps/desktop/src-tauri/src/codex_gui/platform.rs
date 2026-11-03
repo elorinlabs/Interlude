@@ -1,0 +1,58 @@
+use std::path::Path;
+use tokio::process::Command;
+
+/// Enumerate filesystem roots only from a blocking worker, since a drive may be slow to respond.
+pub(super) fn directory_roots() -> Vec<std::path::PathBuf> {
+    #[cfg(windows)]
+    {
+        (b'A'..=b'Z')
+            .map(|letter| std::path::PathBuf::from(format!("{}:\\", char::from(letter))))
+            .filter(|path| path.is_dir())
+            .collect()
+    }
+    #[cfg(not(windows))]
+    vec![std::path::PathBuf::from("/")]
+}
+
+pub(super) fn execution_path(path: &Path) -> String {
+    let value = path.to_string_lossy();
+    #[cfg(windows)]
+    {
+        if let Some(unc) = value.strip_prefix(r"\\?\UNC\") {
+            return format!(r"\\{unc}");
+        }
+        value.strip_prefix(r"\\?\").unwrap_or(&value).to_owned()
+    }
+    #[cfg(not(windows))]
+    value.into_owned()
+}
+
+pub(super) fn comparable_path(path: &str) -> String {
+    #[cfg(windows)]
+    {
+        let path = execution_path(Path::new(path)).replace('\\', "/");
+        path.strip_prefix("//?/")
+            .unwrap_or(&path)
+            .trim_end_matches('/')
+            .to_lowercase()
+    }
+    #[cfg(not(windows))]
+    path.trim_end_matches('/').to_owned()
+}
+
+pub(super) fn hide_window(command: &mut Command) {
+    #[cfg(windows)]
+    command.creation_flags(0x08000000); // CREATE_NO_WINDOW: CLI transport must not open a console.
+    #[cfg(not(windows))]
+    let _ = command;
+}
+
+pub(super) fn hide_git_window(command: &mut std::process::Command) {
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        command.creation_flags(0x08000000); // CREATE_NO_WINDOW for background Git operations.
+    }
+    #[cfg(not(windows))]
+    let _ = command;
+}

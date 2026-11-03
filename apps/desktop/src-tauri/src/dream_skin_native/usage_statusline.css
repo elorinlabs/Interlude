@@ -1,0 +1,19 @@
+[data-codex-switch-usage-statusline] {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+  gap: 6px 22px; box-sizing: border-box; width: 100%; margin-top: 5px; padding: 0 8px;
+  font-family: inherit; font-size: 13px; font-weight: 400; line-height: 18px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary, inherit); user-select: none;
+}
+[data-codex-switch-usage-statusline][hidden] { display: none !important; }
+[data-codex-switch-usage-statusline] [data-usage-metric] {
+  display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+}
+[data-codex-switch-usage-statusline] [data-usage-metric] svg {
+  width: 14px; height: 14px; fill: none; stroke: currentColor;
+  stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round;
+}
+[data-codex-switch-usage-statusline] [data-usage-metric="2"] svg {
+  width: 14px; height: 14px; stroke-width: 1.4; stroke-linecap: butt;
+  color: var(--text-tertiary, #718078);
+}

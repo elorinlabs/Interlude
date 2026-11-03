@@ -1,0 +1,33 @@
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin: 16px 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.line { flex: 1; min-width: 16px; height: 1px; background: var(--line); }
+.label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: min(400px, calc(100% - 56px));
+  overflow-wrap: anywhere;
+  text-align: center;
+
+  > svg { flex-shrink: 0; }
+  > span { min-width: 0; }
+  button {
+    display: flex;
+    flex-shrink: 0;
+    padding: 2px;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: help;
+  }
+}

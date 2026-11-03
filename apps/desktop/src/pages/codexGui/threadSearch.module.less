@@ -1,0 +1,146 @@
+.modal {
+  --search-inset: 28px;
+  max-width: calc(100vw - 32px);
+  padding-bottom: 0;
+
+  :global(.ant-modal-content) {
+    overflow: hidden;
+    padding: 28px var(--search-inset) 0;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: var(--panel);
+    box-shadow: 0 24px 80px rgb(0 0 0 / 18%);
+  }
+
+  :global(.ant-modal-header) { margin-bottom: 4px; background: transparent; }
+  :global(.ant-modal-title) { color: var(--ink); font-size: 20px; line-height: 28px; }
+  :global(.ant-modal-close) { top: 24px; right: 24px; border-radius: 8px; color: var(--muted); }
+}
+
+.description { max-width: 400px; margin: 0 0 22px; color: var(--muted); font-size: 13px; }
+.search {
+  height: 52px;
+  padding: 0 16px;
+  border-color: var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  font-size: 15px;
+
+  :global(.ant-input-prefix) { margin-right: 12px; color: var(--muted); }
+  :global(.ant-input) {
+    background: transparent;
+    color: var(--ink);
+    &::placeholder { color: var(--muted); opacity: 1; }
+  }
+  &:hover { border-color: var(--green); }
+  &:focus-within {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 16%, transparent);
+  }
+}
+
+.sectionHeading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 22px 4px 10px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+.count { font-weight: 400; font-variant-numeric: tabular-nums; }
+.results {
+  height: min(480px, 52vh);
+  // Extend the scroll container to the panel edge while keeping rows inset.
+  margin-right: calc(-1 * var(--search-inset));
+  padding-right: calc(var(--search-inset) - 8px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+.result {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 70px;
+  margin-bottom: 4px;
+  padding: 12px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease;
+
+  &:hover:not(:disabled), &:focus-visible { background: color-mix(in srgb, var(--green) 10%, var(--panel)); }
+  &:focus-visible { outline: none; border-color: var(--green); }
+  &:disabled { opacity: 0.5; cursor: default; }
+  &:hover:not(:disabled) .openIcon, &:focus-visible .openIcon { opacity: 1; color: var(--green-dark); }
+}
+.threadIcon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--panel);
+  color: var(--muted);
+}
+.details { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 5px; }
+.title { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 14px; line-height: 21px; }
+.project {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 16px;
+
+  svg { flex-shrink: 0; }
+  span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+}
+.openIcon { flex-shrink: 0; color: var(--muted); opacity: 0.35; }
+.empty {
+  display: flex;
+  min-height: 100%;
+  padding: 32px 16px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--muted);
+}
+.emptyHint { font-size: 12px; }
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 16px calc(-1 * var(--search-inset)) 0;
+  padding: 14px var(--search-inset);
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+
+  kbd { margin-right: 4px; padding: 2px 5px; border: 1px solid var(--line); border-radius: 4px; font: inherit; }
+}
+@media (max-width: 600px), (max-height: 650px) {
+  .modal {
+    --search-inset: 16px;
+    :global(.ant-modal-content) { padding-top: 20px; border-radius: 16px; }
+    :global(.ant-modal-close) { top: 18px; right: 14px; }
+  }
+  .description { margin-bottom: 16px; }
+  .sectionHeading { margin-top: 16px; }
+  .results { height: min(420px, 45dvh); }
+  .result { gap: 10px; padding: 10px 8px; }
+  .footer { margin-top: 12px; padding-block: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .result { transition: none; }
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "targetDefaults": {
+    "build": {
+      "cache": true,
+      "inputs": ["default", "^default", "{workspaceRoot}/shared/**/*"],
+      "dependsOn": [
+        "^build"
+      ]
+    },
+    "check": {
+      "cache": true,
+      "inputs": ["default", "^default", "{workspaceRoot}/shared/**/*"],
+      "dependsOn": [
+        "^check"
+      ]
+    },
+    "test": {
+      "cache": true,
+      "inputs": ["default", "^default", "{workspaceRoot}/shared/**/*"]
+    },
+    "test:typecheck": {
+      "cache": true
+    }
+  }
+}

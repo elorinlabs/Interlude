@@ -1,0 +1,316 @@
+import { spawnSync } from "node:child_process";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+
+const args = process.argv.slice(2);
+const beta = args.includes("--beta");
+const userArgs = args.filter((arg) => arg !== "--beta");
+const requested = userArgs[0];
+const cwd = process.cwd();
+const packageJsonPath = join(cwd, "package.json");
+const packageLockPath = join(cwd, "package-lock.json");
+const desktopPackageLockPath = "apps/desktop";
+const desktopPackageRelativePath = "apps/desktop/package.json";
+const tauriConfigRelativePath = "apps/desktop/src-tauri/tauri.conf.json";
+const nativePackageLockPath = "apps/native";
+const nativePackageRelativePath = "apps/native/package.json";
+const nativeAppConfigRelativePath = "apps/native/app.json";
+const MSI_VERSION_MAJOR_MINOR_MAX = 255;
+const MSI_VERSION_PATCH_BUILD_MAX = 65535;
+const desktopPackageJsonPath = join(cwd, ...desktopPackageRelativePath.split("/"));
+const tauriConfigPath = join(cwd, ...tauriConfigRelativePath.split("/"));
+const nativePackageJsonPath = join(cwd, ...nativePackageRelativePath.split("/"));
+const nativeAppConfigPath = join(cwd, ...nativeAppConfigRelativePath.split("/"));
+const packageJson = readJson(packageJsonPath);
+const currentVersion = parseVersion(packageJson.version, "package.json version");
+const branch = gitOutput(["branch", "--show-current"]);
+
+if (requested === "-h" || requested === "--help") {
+  printHelp();
+  process.exit(0);
+}
+
+if (userArgs.length > 1) {
+  fail(`Too many arguments: ${userArgs.join(" ")}`);
+}
+
+const nextVersion = requested
+  ? explicitVersion(requested, beta)
+  : beta
+    ? nextBetaVersion(currentVersion)
+    : nextReleaseVersion(currentVersion);
+const releaseTag = `v${formatVersion(nextVersion)}`;
+
+if (tagExists(releaseTag)) {
+  fail(`Tag ${releaseTag} already exists.`);
+}
+
+if (!branch) {
+  fail("Release must be run from a branch, not a detached HEAD.");
+}
+
+ensureCleanWorkingTree();
+syncVersionFiles(nextVersion);
+
+const versionFiles = ["package.json"];
+if (existsSync(packageLockPath)) versionFiles.push("package-lock.json");
+if (existsSync(desktopPackageJsonPath)) versionFiles.push(desktopPackageRelativePath);
+if (existsSync(tauriConfigPath)) versionFiles.push(tauriConfigRelativePath);
+if (existsSync(nativePackageJsonPath)) versionFiles.push(nativePackageRelativePath);
+if (existsSync(nativeAppConfigPath)) versionFiles.push(nativeAppConfigRelativePath);
+
+if (gitOutput(["status", "--porcelain", "--", ...versionFiles])) {
+  run("git", ["add", ...versionFiles]);
+  run("git", ["commit", "-m", `chore(release): ${releaseTag}`]);
+}
+run("git", ["tag", "-a", releaseTag, "-m", `Release ${releaseTag}`]);
+
+console.log(`Created ${releaseTag}.`);
+console.log(`Pushing ${branch} and ${releaseTag} to origin...`);
+run("git", ["push", "origin", branch]);
+run("git", ["push", "origin", releaseTag]);
+console.log(`Pushed ${releaseTag}. GitHub Actions will start from the tag push.`);
+
+function printHelp() {
+  console.log(`Usage: npm run ${beta ? "release-beta" : "release"} -- [version-or-tag]
+
+Creates a version bump commit, creates an annotated git tag, and pushes both to origin.
+
+Default behavior:
+  npm run release       ${packageJson?.version ? `# ${packageJson.version} -> ${formatVersion(nextReleaseVersion(currentVersion))}` : ""}
+  npm run release-beta  ${packageJson?.version ? `# ${packageJson.version} -> ${formatVersion(nextBetaVersion(currentVersion))}` : ""}
+
+Examples:
+  npm run release
+  npm run release -- v0.2.0
+  npm run release-beta
+  npm run release-beta -- v0.2.0
+  npm run release-beta -- v0.2.0-beta.2`);
+}
+
+function explicitVersion(value, betaRelease) {
+  const parsed = parseVersion(value, "release version");
+  if (betaRelease && !parsed.prerelease) {
+    return { ...parsed, prerelease: "beta.0", build: undefined };
+  }
+  return parsed;
+}
+
+function nextReleaseVersion(version) {
+  if (version.prerelease) {
+    return { ...version, prerelease: undefined, build: undefined };
+  }
+  return { major: version.major, minor: version.minor, patch: version.patch + 1 };
+}
+
+function nextBetaVersion(version) {
+  if (version.prerelease) {
+    const match = /^beta\.(\d+)$/.exec(version.prerelease);
+    if (match) {
+      return {
+        major: version.major,
+        minor: version.minor,
+        patch: version.patch,
+        prerelease: `beta.${Number(match[1]) + 1}`,
+      };
+    }
+    return {
+      major: version.major,
+      minor: version.minor,
+      patch: version.patch,
+      prerelease: "beta.0",
+    };
+  }
+
+  return {
+    major: version.major,
+    minor: version.minor,
+    patch: version.patch + 1,
+    prerelease: "beta.0",
+  };
+}
+
+function syncVersionFiles(version) {
+  const versionText = formatVersion(version);
+  packageJson.version = versionText;
+  writeJson(packageJsonPath, packageJson);
+
+  if (existsSync(desktopPackageJsonPath)) {
+    const desktopPackageJson = readJson(desktopPackageJsonPath);
+    desktopPackageJson.version = versionText;
+    writeJson(desktopPackageJsonPath, desktopPackageJson);
+  }
+
+  if (existsSync(packageLockPath)) {
+    const lock = readJson(packageLockPath);
+    lock.version = versionText;
+    if (lock.packages?.[""]) {
+      lock.packages[""].version = versionText;
+    }
+    if (lock.packages?.[desktopPackageLockPath]) {
+      lock.packages[desktopPackageLockPath].version = versionText;
+    }
+    if (lock.packages?.[desktopPackageRelativePath]) {
+      lock.packages[desktopPackageRelativePath].version = versionText;
+    }
+    if (lock.packages?.[nativePackageLockPath]) {
+      lock.packages[nativePackageLockPath].version = versionText;
+    }
+    if (lock.packages?.[nativePackageRelativePath]) {
+      lock.packages[nativePackageRelativePath].version = versionText;
+    }
+    writeJson(packageLockPath, lock);
+  }
+
+  if (existsSync(tauriConfigPath)) {
+    const tauriConfig = readJson(tauriConfigPath);
+    tauriConfig.version = versionText;
+    tauriConfig.bundle ??= {};
+    tauriConfig.bundle.windows ??= {};
+    tauriConfig.bundle.windows.wix ??= {};
+    tauriConfig.bundle.windows.wix.version = formatWixVersion(version);
+    writeJson(tauriConfigPath, tauriConfig);
+  }
+
+  if (existsSync(nativePackageJsonPath)) {
+    const nativePackageJson = readJson(nativePackageJsonPath);
+    nativePackageJson.version = versionText;
+    writeJson(nativePackageJsonPath, nativePackageJson);
+  }
+
+  if (existsSync(nativeAppConfigPath)) {
+    const nativeAppConfig = readJson(nativeAppConfigPath);
+    nativeAppConfig.expo ??= {};
+    nativeAppConfig.expo.android ??= {};
+    nativeAppConfig.expo.version = versionText;
+    nativeAppConfig.expo.android.versionCode = formatAndroidVersionCode(version);
+    writeJson(nativeAppConfigPath, nativeAppConfig);
+  }
+}
+
+function ensureCleanWorkingTree() {
+  const status = gitOutput(["status", "--porcelain"]);
+  if (status) {
+    fail("Working tree is not clean. Commit or stash your changes before creating a release.");
+  }
+}
+
+function tagExists(tag) {
+  const result = spawnSync("git", ["rev-parse", "--quiet", "--verify", `refs/tags/${tag}`], {
+    stdio: "ignore",
+  });
+  return result.status === 0;
+}
+
+function gitOutput(args) {
+  const result = spawnSync("git", args, {
+    encoding: "utf8",
+  });
+  if (result.status !== 0) {
+    return "";
+  }
+  return result.stdout.trim();
+}
+
+function run(command, commandArgs) {
+  const result = spawnSync(command, commandArgs, {
+    stdio: "inherit",
+  });
+  if ((result.status ?? 1) !== 0) {
+    process.exit(result.status ?? 1);
+  }
+}
+
+function readJson(path) {
+  try {
+    return JSON.parse(readFileSync(path, "utf8"));
+  } catch (error) {
+    fail(`Unable to read ${path}: ${error.message}`);
+  }
+}
+
+function writeJson(path, value) {
+  writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+function parseVersion(value, label) {
+  const match = /^v?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+([0-9A-Za-z.-]+))?$/.exec(
+    String(value),
+  );
+  if (!match) {
+    fail(`Invalid ${label} "${value}". Use a semver version like v0.1.0.`);
+  }
+  return {
+    major: Number(match[1]),
+    minor: Number(match[2]),
+    patch: Number(match[3]),
+    prerelease: match[4],
+    build: match[5],
+  };
+}
+
+function formatVersion(version) {
+  const prerelease = version.prerelease ? `-${version.prerelease}` : "";
+  const build = version.build ? `+${version.build}` : "";
+  return `${version.major}.${version.minor}.${version.patch}${prerelease}${build}`;
+}
+
+function formatWixVersion(version) {
+  assertMsiVersionPart(version.major, "major", MSI_VERSION_MAJOR_MINOR_MAX);
+  assertMsiVersionPart(version.minor, "minor", MSI_VERSION_MAJOR_MINOR_MAX);
+  assertMsiVersionPart(version.patch, "patch", MSI_VERSION_PATCH_BUILD_MAX);
+
+  const parts = [version.major, version.minor, version.patch];
+
+  if (version.prerelease) {
+    const prereleaseNumber = numericPrereleaseSuffix(version.prerelease);
+    assertMsiVersionPart(prereleaseNumber, "pre-release", MSI_VERSION_PATCH_BUILD_MAX);
+    parts.push(prereleaseNumber);
+  }
+
+  return parts.join(".");
+}
+
+function formatAndroidVersionCode(version) {
+  assertAndroidVersionPart(version.major, "major", 209);
+  assertAndroidVersionPart(version.minor, "minor", 99);
+  assertAndroidVersionPart(version.patch, "patch", 999);
+
+  let releaseSequence = 99;
+  if (version.prerelease) {
+    releaseSequence = numericPrereleaseSuffix(version.prerelease);
+    assertAndroidVersionPart(releaseSequence, "pre-release", 98);
+  }
+
+  return (version.major * 10_000_000)
+    + (version.minor * 100_000)
+    + (version.patch * 100)
+    + releaseSequence;
+}
+
+function numericPrereleaseSuffix(prerelease) {
+  const lastIdentifier = prerelease.split(".").at(-1);
+  if (!/^\d+$/.test(lastIdentifier)) {
+    fail(
+      `MSI releases require a numeric pre-release suffix, but got "${prerelease}". Use a version like v0.1.0-beta.0.`,
+    );
+  }
+  return Number(lastIdentifier);
+}
+
+function assertMsiVersionPart(value, label, max) {
+  if (!Number.isInteger(value) || value < 0 || value > max) {
+    fail(`MSI ${label} version part must be between 0 and ${max}.`);
+  }
+}
+
+function assertAndroidVersionPart(value, label, max) {
+  if (!Number.isInteger(value) || value < 0 || value > max) {
+    fail(`Android ${label} version part must be between 0 and ${max}.`);
+  }
+}
+
+function fail(message) {
+  console.error(message);
+  process.exit(1);
+}

@@ -1,0 +1,12 @@
+// Include the composer border so the queue edges line up with its outer buttons.
+.queue { margin: 0 calc(var(--gui-composer-padding) + 1px) -1px;
+  border: 1px solid var(--gui-border); border-bottom: 0; border-radius: 18px 18px 0 0;
+  background: var(--gui-composer-surface); font-size: calc(var(--gui-font-size, 14px) - 1px);
+  ul { list-style: none; padding: 0; margin: 0; max-height: 240px; overflow-y: auto; } }
+.heading { display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 12px; color: var(--gui-muted); font-size: calc(var(--gui-font-size, 14px) - 2px); }
+.item { border-top: 1px solid var(--gui-border); }
+.row { display: flex; align-items: center; gap: 6px; padding: 8px 10px; min-width: 0;
+  > svg, > button { flex-shrink: 0; } }
+.text { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  small { color: var(--gui-muted); } }

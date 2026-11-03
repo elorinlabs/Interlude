@@ -1,0 +1,5 @@
+{
+  "client.projectActions.longPressHint": "Нажмите и удерживайте для управления проектом",
+  "client.projectActions.removeTitle": "Убрать этот проект?",
+  "client.projectActions.removeDescription": "Проект будет убран из списка. Его чаты останутся в разделе «Недавние», а файлы на компьютере не будут удалены."
+}

@@ -1,0 +1,105 @@
+import { displayText, uiText } from "../../../i18n/uiText";
+import type { ReactNode } from 'react';
+import { Button, Segmented } from 'antd';
+import { ChevronRight, Folder, Pin, RefreshCw, Search, SquarePen } from 'lucide-react';
+import { RemoteProjectMenu } from '../../../../../../shared/remote-chat/client/RemoteProjectMenu';
+import type { ChatSidebarActions } from '../../../../../web/src/chat/ConnectedChat';
+import type { ChatController, ChatState } from '../../../../../web/src/chat/types';
+import { useThreadGroups } from '../../../../../../shared/remote-chat/client/useThreadGroups';
+import { useThreadActions } from '../../../../../../shared/remote-chat/client/useThreadActions';
+import { threadPresentation } from '../../../../../../shared/remote-chat/sidebar';
+import { FocusModeButton, type GuiFocusMode } from '../FocusModeButton';
+import { ThreadStatus } from '../ThreadStatus';
+import { ThreadPagination } from '../ThreadPagination';
+import { ResizableThreadSidebar } from '../ResizableThreadSidebar';
+import { useThreadScrollPagination } from '../useThreadPagination';
+import { RemoteThreadDialogs, RemoteThreadMenu } from './RemoteThreadMenu';
+import styles from '../styles.module.less';
+import groupsStyle from '../ThreadGroup.module.less';
+import navigationStyle from '../GuiNavigation.module.less';
+
+export function RemoteGuiSidebar({ state, controller, actions, accountPicker, focusMode }: {
+  state: ChatState; controller: ChatController; actions: ChatSidebarActions;
+  accountPicker: ReactNode; focusMode: GuiFocusMode;
+}) {
+  const { groups: projectGroups, toggle, toggleCollapse } = useThreadGroups(state);
+  const groups = projectGroups.map(group => ({
+    ...group, label: group.cwd ? group.label : uiText("client.chat.recent"),
+  }));
+  const threadActions = useThreadActions(state, controller);
+  const renderHeading = (group: typeof groups[number]) => <button type="button" className={groupsStyle.heading}
+    aria-expanded={!group.collapsed} onClick={() => toggleCollapse(group.cwd)}>
+    <span className={groupsStyle.icon} aria-hidden="true">
+      <Folder size={14} className={groupsStyle.folder} />
+      <ChevronRight size={14} className={groupsStyle.arrow} />
+    </span><span className={groupsStyle.label}>{group.label}</span>
+    {state.sidebar.pinnedProjects?.includes(group.cwd)
+      && <Pin size={12} className={groupsStyle.pin} aria-label={uiText('client.workspaceActions.pinned')} />}
+  </button>;
+  const pagination = useThreadScrollPagination({
+    enabled: state.ready,
+    loading: state.loading,
+    scope: JSON.stringify([state.archived, state.search, state.ready]),
+    cursor: state.cursor,
+    loadMore: () => controller.list({ more: true }),
+  });
+  return <ResizableThreadSidebar className="gui-remote-sidebar" layoutSelector=".chat-diff-layout">
+    <div className={styles.sidebarHeading} data-tauri-drag-region>
+      <h2 className={styles.sidebarTitle} data-tauri-drag-region>Codex GUI</h2>
+      <div className={styles.sidebarActions}>
+        <FocusModeButton {...focusMode} />
+        <Button type="text" size="small" icon={<RefreshCw size={15} />} aria-label={uiText("client.workspaceActions.refreshConversations")}
+          loading={Boolean(state.listRefreshing)} disabled={!state.ready}
+          onClick={() => void controller.list()} />
+        <Button type="text" size="small" icon={<Search size={15} />} aria-label={uiText("client.workspaceActions.searchConversations")}
+          disabled={!state.ready} onClick={actions.openSearch} />
+      </div>
+    </div>
+    <nav className={navigationStyle.navigation} aria-label={uiText("client.workspaceSettings.codexGuiNavigation")}>
+      <button type="button" disabled={state.sending} onClick={() => actions.newChat()}>
+        <SquarePen size={18} strokeWidth={1.6} /><span>{uiText("client.workspaceSettings.newConversation")}</span>
+      </button>
+    </nav>
+    <Segmented className={styles.threadFilter} block size="small" value={state.archived ? 'archived' : 'recent'}
+      options={[{ label: uiText("client.chat.recent"), value: 'recent' }, { label: uiText("client.mobile.archived"), value: 'archived' }]}
+      disabled={!state.ready || state.loading}
+      onChange={value => { void controller.list({ archived: value === 'archived' }); }} />
+    <div className={styles.threadList} aria-busy={state.loading} {...pagination}>
+      {groups.map(group => <section className={groupsStyle.group} aria-label={group.label} key={group.cwd}>
+        <div className={groupsStyle.header}>
+          {group.cwd ? <RemoteProjectMenu cwd={group.cwd} label={group.label} state={state} controller={controller}
+            translate={uiText} buttonClassName={groupsStyle.add}>{renderHeading(group)}</RemoteProjectMenu>
+            : renderHeading(group)}
+          {group.cwd && <button type="button" className={groupsStyle.add}
+            aria-label={uiText("client.chat.startAChatIn", { value1: group.label })} disabled={state.sending}
+            onClick={() => actions.newChat(group)}><SquarePen size={14} strokeWidth={1.6} /></button>}
+        </div>
+        <div className={groupsStyle.content} hidden={group.collapsed}>
+          {group.data.map(thread => {
+            const view = threadPresentation(thread, state.sidebar, displayText);
+            const selected = state.selected?.id === thread.id;
+            return <RemoteThreadMenu key={thread.id} thread={thread} state={state} controller={controller}
+              actions={threadActions} onClose={actions.onClose}>
+              <div className={`${styles.thread} ${selected ? styles.selected : ''}`}>
+                <button type="button" className={styles.threadSelect} aria-label={view.title}
+                  aria-current={selected ? 'page' : undefined} disabled={!state.ready || state.sending}
+                  onClick={() => { void controller.select(thread); actions.onClose(); }}>
+                  <span className={styles.threadTitle}>{view.title}</span>
+                  <ThreadStatus running={view.running} unread={view.unread}
+                    needsInput={state.approvals.some(event => event.params.threadId === thread.id)} />
+                </button>
+              </div>
+            </RemoteThreadMenu>;
+          })}
+          {group.canToggle && <button type="button" className={groupsStyle.more}
+            aria-expanded={group.expanded} onClick={() => toggle(group.cwd)}>
+            {group.expanded ? uiText("client.chat.collapse") : uiText("client.chat.showMore.83ad87")}</button>}
+        </div>
+      </section>)}
+      {!state.threads.length && <p className={styles.listEmpty}>{state.ready ? uiText("client.workspaceActions.noConversationsYet") : uiText("client.workspaceActions.connectToAComputerToViewConversations")}</p>}
+      {state.cursor && <ThreadPagination loading={state.loading} />}
+    </div>
+    {accountPicker}
+    <RemoteThreadDialogs actions={threadActions} />
+  </ResizableThreadSidebar>;
+}

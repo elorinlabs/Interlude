@@ -1,0 +1,14 @@
+Interlude
+Copyright 2026 JingXing and Interlude contributors.
+
+Interlude is derived from piperhex/remoteai (formerly Codex Switch):
+https://github.com/piperhex/remoteai
+The upstream source is distributed under the Apache License, Version 2.0.
+The source retains upstream copyright and license notices. See LICENSE.
+
+The initial elorinlabs/Interlude repository's MIT license is retained in
+docs/licenses/repository-initial-MIT.txt for its initial repository contents.
+It does not relicense the Apache-2.0-derived application.
+
+OpenAI, Codex and other product names belong to their respective owners.
+Interlude is an independent community tool and is not an official OpenAI product.

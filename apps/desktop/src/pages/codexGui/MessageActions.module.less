@@ -1,0 +1,24 @@
+.actions {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  color: var(--gui-muted);
+
+  > button { color: inherit; }
+
+  &:hover .timestamp, &:focus-within .timestamp { opacity: 1; }
+}
+
+.timestamp {
+  margin-left: 4px;
+  font-size: 12px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+@media (hover: none) { .timestamp { opacity: 1; } }

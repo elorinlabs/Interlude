@@ -1,0 +1,145 @@
+import { uiText } from "../../i18n/uiText";
+import { useGuiLanguage } from '../../i18n/useGuiLanguage';
+import { useMemo, useState, type ReactNode } from "react";
+import { App, Button, Input, Modal, Segmented, Spin } from "antd";
+import { ThreadContextMenu } from "../../../../../shared/chat/ThreadContextMenu";
+import { RefreshCw, Search } from "lucide-react";
+import { threadMenuItems } from "../../../../../shared/chat/threadMenuItems";
+import type { GuiController } from "./controller";
+import type { GuiState, Thread } from "./types";
+import { ThreadGroup } from "./ThreadGroup";
+import { ThreadSearch } from "./ThreadSearch";
+import { useThreadGroupViews } from "./useThreadGroupViews";
+import { threadGroups } from "./threadGroups";
+import { isThreadRunning } from "./threadRunning";
+import { canForkLatestConversation } from "./forkConversation";
+import { ProjectGroupMenu } from "./ProjectGroupMenu";
+import { ThreadStatus } from "./ThreadStatus";
+import { ThreadPagination } from "./ThreadPagination";
+import { ResizableThreadSidebar } from "./ResizableThreadSidebar";
+import { useThreadPagination } from "./useThreadPagination";
+import { isDesktopApp } from "../../api/backend";
+import { fileApi } from "./fileApi";
+import { useOpenProjectFolder } from "../../../../../shared/chat/useOpenProjectFolder";
+import { FocusModeButton, type GuiFocusMode } from "./FocusModeButton";
+import { GuiNavigation, type GuiView } from "./GuiNavigation";
+import styles from "./styles.module.less";
+
+export function threadTitle(thread: Thread) { return thread.name || thread.preview || uiText("client.workspaceSettings.newConversation"); }
+export { projectName } from "./projectCatalog";
+
+export function ThreadSidebar({ state, controller, accountPicker, focused, onToggleFocus,
+  view = "conversation", onNavigate = () => {}, scheduledTasksAvailable = true }: {
+  state: GuiState; controller: GuiController; accountPicker: ReactNode;
+  view?: GuiView; onNavigate?: (view: GuiView) => void; scheduledTasksAvailable?: boolean;
+} & GuiFocusMode) {
+  const language = useGuiLanguage();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const pagination = useThreadPagination({ state, controller, enabled: !searchOpen });
+  const [renaming, setRenaming] = useState<Thread | null>(null);
+  const [deleting, setDeleting] = useState<Thread | null>(null);
+  const { message } = App.useApp();
+  const openProject = useOpenProjectFolder(fileApi, uiText);
+  const [name, setName] = useState("");
+  const { views, toggle } = useThreadGroupViews();
+  const closeSearch = () => {
+    setSearchOpen(false);
+    if (state.search) controller.filter("", state.archived);
+  };
+  const groups = useMemo(() => threadGroups(state),
+    [state.threads, state.pins, state.projects, state.pinnedProjects, state.conversations, state.pendingRequest, language]);
+  const renderThread = (thread: Thread) => {
+    const running = isThreadRunning(state, thread);
+    const busy = state.sending || Boolean(state.deleting);
+    const needsInput = state.approvals.some((event) => event.params.threadId === thread.id);
+    const items = threadMenuItems({ pinned: state.pins.includes(thread.id), archived: state.archived, translate: uiText,
+      openProject: isDesktopApp && Boolean(thread.cwd),
+      disabled: action => {
+        if (action === 'pin') return false;
+        if (action === 'fork') return !canForkLatestConversation(state, thread);
+        if (action === 'delete') return running || busy || needsInput || Boolean(state.queued[thread.id]?.length)
+          || state.connection !== 'ready';
+        return running;
+      } });
+    return <ThreadContextMenu key={thread.id}
+      menu={{ items, onClick: ({ key }) => {
+        if (key === "pin") controller.pin(thread.id);
+        if (key === "openProject") void openProject(thread.cwd);
+        if (key === "rename") { setRenaming(thread); setName(threadTitle(thread)); }
+        if (key === "fork") { onNavigate("conversation"); void controller.forkConversation(thread.id); }
+        if (key === "archive") void controller.manage(state.archived ? "unarchive" : "archive", thread.id);
+        if (key === "delete") setDeleting(thread);
+      } }}>
+      <div className={[styles.thread,
+        view === "conversation" && state.selected === thread.id ? styles.selected : ""].join(" ")}>
+        <button className={styles.threadSelect} disabled={state.sending}
+          onClick={() => { onNavigate("conversation"); void controller.select(thread.id); }}>
+          <span className={styles.threadTitle}>{threadTitle(thread)}</span>
+          <ThreadStatus running={running} needsInput={needsInput}
+            unread={Boolean(state.threadReadState[thread.id]?.unread)} />
+        </button>
+      </div>
+    </ThreadContextMenu>;
+  };
+  return <ResizableThreadSidebar>
+    <div className={styles.sidebarHeading} data-tauri-drag-region={isDesktopApp || undefined}>
+      <h2 className={styles.sidebarTitle} data-tauri-drag-region={isDesktopApp || undefined}>Codex GUI</h2>
+      <div className={styles.sidebarActions} data-tauri-drag-region={isDesktopApp || undefined}>
+        <FocusModeButton focused={focused} onToggleFocus={onToggleFocus} />
+        <Button type="text" size="small" icon={<RefreshCw size={15} />} aria-label={uiText("client.workspaceActions.refreshConversations")}
+          loading={state.loading} disabled={state.connection !== "ready"} onClick={() => void controller.refresh()} />
+        <Button type="text" size="small" icon={<Search size={15} />} aria-label={uiText("client.workspaceActions.searchConversations")}
+          disabled={state.connection !== "ready"} onClick={() => { onNavigate("conversation"); setSearchOpen(true); }} />
+      </div>
+    </div>
+    <GuiNavigation view={view} sending={state.sending} onNavigate={onNavigate}
+      scheduledTasksAvailable={scheduledTasksAvailable}
+      onNewConversation={() => { onNavigate("conversation"); controller.newConversation(); }} />
+    <Segmented className={styles.threadFilter} block size="small" value={state.archived ? "archived" : "recent"}
+      options={[{ label: uiText("client.chat.recent"), value: "recent" }, { label: uiText("client.mobile.archived"), value: "archived" }]}
+      onChange={(value) => controller.filter("", value === "archived")} disabled={state.connection !== "ready"} />
+    <div className={styles.threadList} aria-busy={state.loading} {...pagination}>
+      {groups.map((group) => {
+        const key = `${state.archived ? "archived" : "recent"}:${group.id}`;
+        return <ThreadGroup key={key} label={group.label} pinned={group.pinned} threads={group.threads}
+          selected={view === "conversation" ? state.selected : null}
+          collapsed={views.collapsed.includes(key)} expanded={views.expanded.includes(key)}
+          filtering={Boolean(state.search.trim())} onToggle={(field) => toggle(field, key)}
+          projectPinned={state.pinnedProjects.includes(group.cwd)}
+          projectMenu={group.cwd ? (heading) => <ProjectGroupMenu path={group.cwd} label={group.label}
+            state={state} controller={controller}>{heading}</ProjectGroupMenu> : undefined}
+          creatingDisabled={state.sending} onNewConversation={group.cwd ? () => {
+            onNavigate("conversation");
+            controller.newConversation();
+            controller.setProject(group.cwd);
+          } : undefined}
+          renderThread={renderThread} />;
+      })}
+      {!state.threads.length && <p className={styles.listEmpty}>{state.loading ? <Spin size="small" />
+        : uiText(state.search ? "client.workspaceActions.noMatchingConversations" : "client.workspaceActions.noConversationsYet")}</p>}
+      {state.cursor && <ThreadPagination loading={state.loading} />}
+    </div>
+    {accountPicker}
+    {searchOpen && <ThreadSearch state={state} controller={controller} onClose={closeSearch} />}
+    <Modal title={uiText("client.threadActions.deleteThisChat")} open={Boolean(deleting)} width={400} okText={uiText("client.workspaceActions.moveToTrash")} cancelText={uiText("client.accounts.cancel")}
+      confirmLoading={Boolean(state.deleting)} okButtonProps={{ danger: true }}
+      closable={!state.deleting} maskClosable={!state.deleting} keyboard={!state.deleting}
+      cancelButtonProps={{ disabled: Boolean(state.deleting) }}
+      onCancel={() => { if (!state.deleting) setDeleting(null); }}
+      onOk={async () => {
+        if (deleting && await controller.deleteThread(deleting.id)) {
+          setDeleting(null);
+          void message.success(<span className="compact-confirm-copy">
+            {uiText("client.workspaceActions.movedToTheTrashInSessionsWhereYouCanRestore")}</span>);
+        }
+      }}>
+      <p className="compact-confirm-copy">{uiText("client.workspaceActions.thisConversationAndAllItsChildConversationsWillMoveTo")}</p>
+    </Modal>
+    <Modal title={uiText("client.threadActions.renameChat")} open={Boolean(renaming)} width={400} okText={uiText("client.projectBrowser.save")} cancelText={uiText("client.accounts.cancel")}
+      okButtonProps={{ disabled: !name.trim() }} onCancel={() => setRenaming(null)}
+      onOk={() => { if (renaming) void controller.manage("rename", renaming.id, name); setRenaming(null); }}>
+      <Input value={name} maxLength={120} autoFocus aria-label={uiText("client.threadActions.chatName")}
+        onChange={(event) => setName(event.target.value)} />
+    </Modal>
+  </ResizableThreadSidebar>;
+}

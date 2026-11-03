@@ -1,0 +1,9 @@
+{
+  "ios": {
+    "NSCameraUsageDescription": "Разрешите Interlude делать фото и сканировать QR-коды",
+    "NSPhotoLibraryUsageDescription": "Разрешите Interlude выбирать фото для отправки в чат",
+    "NSPhotoLibraryAddUsageDescription": "Разрешите Interlude сохранять изображения в «Фото»",
+    "NSMotionUsageDescription": "Разрешите Interlude поворачивать изображения в зависимости от положения телефона",
+    "NSLocalNetworkUsageDescription": "Разрешите Interlude подключаться к компьютерам в той же сети для чата и удалённого рабочего стола"
+  }
+}

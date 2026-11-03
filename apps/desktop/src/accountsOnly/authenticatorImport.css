@@ -1,0 +1,15 @@
+.authenticator-import { margin-top: 18px; padding: 14px; border: 1px dashed #a8a1d6; border-radius: 12px; background: #ffffff62; min-width: 0; }
+.authenticator-import-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.authenticator-import-heading strong { color: #393653; font-size: 13px; }
+.authenticator-import-heading > span { font-size: 10px; color: #77708d; }
+.authenticator-import p { font-size: 12px; color: #6c687e; line-height: 1.55; overflow-wrap: anywhere; margin: 8px 0; }
+.authenticator-import-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.authenticator-import-choices { max-height: 164px; overflow: auto; margin-top: 10px; }
+.authenticator-import-choices button { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 10px; border: 0; border-radius: 8px; background: transparent; color: #514b75; cursor: pointer; }
+.authenticator-import-choices button[aria-selected="true"] { background: #e9e5fa; color: #5145a0; }
+.authenticator-import-choices button:hover { background: #efedf9; }
+.authenticator-import-choices button:focus-visible { outline: 2px solid #7163cf; outline-offset: -2px; }
+.authenticator-import-choices button > span { min-width: 0; }
+.authenticator-import-choices strong,.authenticator-import-choices small { display: block; overflow-wrap: anywhere; }
+.authenticator-import-choices strong { font-size: 12px; }
+.authenticator-import-choices small { font-size: 11px; color: #77708d; margin-top: 3px; }

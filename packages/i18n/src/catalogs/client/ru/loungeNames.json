@@ -1,0 +1,16 @@
+{
+  "client.lounge.myAccount": "Мой аккаунт",
+  "client.lounge.accountSettings": "Настройки",
+  "client.lounge.nickname": "Никнейм",
+  "client.lounge.remark": "Имя контакта",
+  "client.lounge.nameNotSet": "Не задано",
+  "client.lounge.nicknameHint": "Ваш никнейм виден другим пользователям.",
+  "client.lounge.remarkHint": "Это имя видно только вам и синхронизируется между вашими устройствами.",
+  "client.lounge.nameLimit": "До {limit} символов. Оставьте поле пустым, чтобы удалить имя.",
+  "client.lounge.nameInvalid": "Введите не более {limit} символов в одну строку.",
+  "client.lounge.nameSaved": "Сохранено",
+  "client.lounge.saveName": "Сохранить",
+  "client.lounge.namesUnavailable": "Изменение сейчас недоступно. Попробуйте позже.",
+  "client.lounge.nicknameSaveFailed": "Не удалось сохранить никнейм. Попробуйте ещё раз.",
+  "client.lounge.remarkSaveFailed": "Не удалось сохранить имя контакта. Попробуйте ещё раз."
+}

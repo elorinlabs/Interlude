@@ -1,0 +1,143 @@
+.root {
+  position: fixed;
+  right: max(22px, env(safe-area-inset-right));
+  bottom: max(22px, env(safe-area-inset-bottom));
+  z-index: 950;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.6;
+  button { cursor: pointer; }
+  button:disabled { cursor: default; opacity: .5; }
+}
+.launcher {
+  width: 33px;
+  height: 33px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid #d9eaff;
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: 0 6px 24px #234e7e26;
+  position: relative;
+  margin-left: auto;
+  user-select: none;
+  img { width: 32px; height: 32px; object-fit: cover; border-radius: 10.5px; transform: scale(1.05); }
+  &[data-dragging] { cursor: grabbing; }
+  &:hover, &:focus-visible { box-shadow: 0 8px 28px #2776c43d; }
+  &:hover .tooltip, &:focus-visible .tooltip { opacity: 1; }
+}
+.launcherMenu {
+  max-width: min(400px, calc(100vw - 32px));
+  :global(.ant-dropdown-menu-title-content) { white-space: normal; overflow-wrap: anywhere; }
+}
+.unread {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--panel);
+  border-radius: 50%;
+  background: #e5484d;
+  pointer-events: none;
+}
+.tooltip {
+  position: absolute;
+  right: 43px;
+  &[data-side='right'] { left: 43px; right: auto; }
+  width: max-content;
+  max-width: min(240px, calc(100vw - 79px));
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--panel);
+  color: var(--ink);
+  opacity: 0;
+  pointer-events: none;
+  overflow-wrap: anywhere;
+}
+.panel {
+  position: absolute;
+  bottom: 47px;
+  right: 0;
+  width: min(392px, calc(100vw - 32px));
+  max-width: 400px;
+  height: min(610px, calc(100dvh - 140px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--panel);
+  box-shadow: 0 14px 60px #132d4b30;
+  outline: none;
+}
+.header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--line);
+  > div { flex: 1; min-width: 0; }
+  strong { font-size: 14px; }
+  small { display: block; color: var(--muted); font-size: 11px; }
+  button { display: grid; place-items: center; border: 0; border-radius: 8px;
+    padding: 6px; background: transparent; color: var(--muted); }
+  button:hover { background: var(--green-soft); }
+}
+.avatar { display: block; width: 38px; height: 38px; border-radius: 12px; overflow: hidden;
+  img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.2); } }
+.body { flex: 1; min-height: 0; padding: 16px; overflow-y: auto; overscroll-behavior: contain; }
+.welcome { h3 { margin: 2px 0 7px; font-size: 16px; } p { color: var(--muted); margin: 0 0 15px; } }
+.suggestions { display: grid; gap: 8px;
+  button { text-align: left; color: var(--ink); border: 1px solid var(--line); border-radius: 10px;
+    padding: 9px 11px; background: transparent; overflow-wrap: anywhere; }
+  button:hover { background: var(--green-soft); }
+}
+.messages { display: flex; flex-direction: column; gap: 13px; overflow-wrap: anywhere; }
+.question { align-self: flex-end; max-width: 92%; border-radius: 12px 12px 3px 12px;
+  padding: 9px 12px; background: var(--green-soft); white-space: pre-wrap; }
+.answer { max-width: 100%; line-height: 1.75;
+  p { margin: 0 0 9px; } ul, ol { padding-left: 20px; }
+  pre { overflow-x: auto; padding: 9px; border-radius: 8px; background: var(--green-soft); }
+  code { font-size: 12px; } table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; }
+  td, th { border: 1px solid var(--line); padding: 5px; }
+}
+.sources { color: var(--muted); font-size: 11px; summary { cursor: pointer; } div { margin-top: 4px; } }
+.thinking, .status { color: var(--muted); font-size: 12px; }
+.notice { margin-top: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 11px;
+  p { margin: 0 0 9px; } > div { display: flex; gap: 8px; flex-wrap: wrap; }
+  button { display: inline-flex; align-items: center; gap: 5px; padding: 5px 9px; border: 1px solid var(--line);
+    border-radius: 7px; background: transparent; color: var(--ink); font-size: 12px; }
+  .primary { background: var(--green-dark); color: #fff; border-color: transparent; }
+}
+.composer { flex-shrink: 0; padding: 12px 14px; border-top: 1px solid var(--line); }
+.inputBox { position: relative; min-height: 46px; border: 1px solid var(--line); border-radius: 12px;
+  &:focus-within { outline: 2px solid var(--green-accent); outline-offset: 1px; }
+  textarea { box-sizing: border-box; display: block; width: 100%; resize: none; padding: 11px 44px;
+    font: inherit; line-height: 22px; color: var(--ink); border: 0; outline: none; background: transparent; }
+}
+.expanded { padding-bottom: 44px; textarea { padding: 10px 11px; } }
+.attachments { display: flex; gap: 9px; flex-wrap: wrap; padding: 10px 11px 0; }
+.attachment { position: relative; width: 58px; height: 58px;
+  img { width: 100%; height: 100%; object-fit: cover; border: 1px solid var(--line); border-radius: 8px; }
+  button { position: absolute; top: -5px; right: -5px; display: grid; place-items: center;
+    width: 20px; height: 20px; padding: 0; color: var(--ink); background: var(--panel);
+    border: 1px solid var(--line); border-radius: 50%; }
+}
+.imageNotice { margin: 7px 0 0; max-width: 100%; font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
+.messageImages { display: flex; flex-wrap: wrap; gap: 6px;
+  img { max-width: 100%; width: 120px; max-height: 140px; object-fit: contain; border-radius: 8px; } }
+.setupProgress { display: flex; align-items: center; gap: 8px;
+  progress { flex: 1; min-width: 0; height: 7px; accent-color: var(--green-dark); }
+  span { font-size: 11px; color: var(--muted); }
+}
+.send, .addImage { position: absolute; bottom: 6px; width: 32px; height: 32px; padding: 0;
+  display: grid; place-items: center; border: 0; }
+.addImage { left: 6px; border-radius: 8px; background: transparent; color: var(--muted); }
+.send { right: 6px;
+  border-radius: 10px; background: var(--green-dark); color: white; }
+@media (max-width: 480px) {
+  .root { right: max(16px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); }
+}

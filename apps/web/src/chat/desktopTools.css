@@ -1,0 +1,16 @@
+@media (min-width: 861px) {
+  .chat-page:not(.gui-remote-workspace) .chat-header { gap: 6px; }
+  .chat-page:not(.gui-remote-workspace) .chat-header-tools { gap: 2px; }
+  .chat-page:not(.gui-remote-workspace) .gui-remote-tools {
+    display: flex; align-items: center; gap: 2px; flex-shrink: 0; margin-left: 4px;
+  }
+  .chat-page:not(.gui-remote-workspace) .chat-header .ant-btn-icon {
+    display: inline-flex; align-items: center;
+  }
+  .chat-page:not(.gui-remote-workspace) .gui-remote-project {
+    width: min(100%, 920px); padding: 0 28px; align-self: center; flex-shrink: 0;
+  }
+}
+@media (min-width: 861px) and (max-width: 1150px) {
+  .chat-page:not(.gui-remote-workspace) .gui-remote-project { padding-inline: 16px; }
+}

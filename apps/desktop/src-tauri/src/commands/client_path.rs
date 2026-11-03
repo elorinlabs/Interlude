@@ -1,0 +1,115 @@
+#[cfg(target_os = "windows")]
+fn refresh_local_codex_path<R: Runtime>(app: &tauri::AppHandle<R>) {
+    let Some(path) = discover_running_chatgpt_or_codex_path() else {
+        return;
+    };
+    let Ok(paths) = resolve_paths(app) else {
+        return;
+    };
+    let mut state = read_state(&paths);
+    if state.local_codex_path.as_deref() != Some(path.as_str()) {
+        state.local_codex_path = Some(path.clone());
+        let _ = write_state(&paths, &state);
+    }
+}
+
+#[cfg(not(target_os = "windows"))]
+fn refresh_local_codex_path<R: Runtime>(_app: &tauri::AppHandle<R>) {}
+
+#[cfg(target_os = "windows")]
+fn discover_running_chatgpt_or_codex_path() -> Option<String> {
+    crate::windows_client_processes::running_desktop_shells()
+        .into_iter()
+        .next()
+        .and_then(|path| normalize_windows_chatgpt_target(&path.to_string_lossy()))
+}
+
+pub(crate) fn refresh_and_get_chatgpt_launch_target<R: Runtime>(
+    app: &tauri::AppHandle<R>,
+) -> Result<Option<ChatGptLaunchTarget>, String> {
+    if let Some(executable) = crate::chatgpt_launch::configured_executable(app)
+        .map_err(|error| error.to_string())?
+    {
+        return Ok(Some(ChatGptLaunchTarget { executable }));
+    }
+    refresh_local_codex_path(app);
+
+    #[cfg(target_os = "windows")]
+    {
+        // The managed runtime resolves the official installation when no hint exists.
+        // Do not run an unbounded PowerShell package lookup before that same discovery.
+        Ok(resolve_paths(app)
+            .ok()
+            .and_then(|paths| read_state(&paths).local_codex_path)
+            .filter(|path| Path::new(path).is_file())
+            .map(|path| ChatGptLaunchTarget {
+                executable: path.into(),
+            }))
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        Ok(None)
+    }
+}
+
+/// Reuse automatic installation discovery without applying the user's override.
+pub(crate) fn detect_chatgpt_launch_path<R: Runtime>(app: &tauri::AppHandle<R>) -> Option<String> {
+    #[cfg(any(target_os = "windows", target_os = "macos"))]
+    if let Some(path) = crate::dream_skin_native::detect_chatgpt_executable() {
+        return Some(path.display().to_string());
+    }
+    #[cfg(target_os = "windows")]
+    return resolve_paths(app).ok()
+        .and_then(|paths| read_state(&paths).local_codex_path)
+        .filter(|path| Path::new(path).is_file());
+    #[cfg(not(target_os = "windows"))]
+    {
+        let _ = app;
+        std::env::var_os("PATH").and_then(|paths| {
+            std::env::split_paths(&paths)
+                .flat_map(|directory| [directory.join(CHATGPT_COMMAND), directory.join(LEGACY_CODEX_COMMAND)])
+                .find(|path| path.is_file())
+                .map(|path| path.display().to_string())
+        })
+    }
+}
+
+#[cfg(target_os = "windows")]
+pub(crate) fn chatgpt_or_codex_is_running() -> Result<bool, String> {
+    Ok(crate::windows_client_processes::desktop_is_running())
+}
+
+#[cfg(unix)]
+pub(crate) fn chatgpt_or_codex_is_running() -> Result<bool, String> {
+    Ok([CHATGPT_COMMAND, LEGACY_CODEX_COMMAND, "ChatGPT", "Codex"]
+        .into_iter().any(client_unix::is_running))
+}
+
+#[cfg(target_os = "windows")]
+pub(crate) fn stop_chatgpt_processes() -> Result<(), String> {
+    crate::windows_client_processes::stop_desktop_processes().map_err(|error| error.to_string())
+}
+
+#[cfg(target_os = "windows")]
+pub(crate) fn wait_for_chatgpt_processes_to_exit(timeout: Duration) -> Result<(), String> {
+    crate::windows_client_processes::wait_for_desktop_exit(timeout)
+        .map_err(|error| error.to_string())
+}
+
+#[cfg(unix)]
+pub(crate) fn stop_chatgpt_processes() -> Result<(), String> {
+    stop_unix_process(CHATGPT_COMMAND)?;
+    stop_unix_process(LEGACY_CODEX_COMMAND)?;
+    #[cfg(target_os = "macos")]
+    {
+        stop_unix_process("ChatGPT")?;
+        stop_unix_process("Codex")?;
+    }
+    Ok(())
+}
+
+#[cfg(unix)]
+pub(crate) fn wait_for_chatgpt_processes_to_exit(_timeout: Duration) -> Result<(), String> {
+    Ok(())
+}

@@ -1,0 +1,123 @@
+import { t } from './i18n.js';
+
+const MAX_TARGETS = 64;
+const AUTO_ATTACH = { autoAttach: true, waitForDebuggerOnStart: false, flatten: true,
+  filter: [{ type: 'iframe', exclude: false }] };
+
+// Chrome omits out-of-process frames from the main target's frame tree. Each child session owns a tree.
+export function createFrameSessions(target, guard) {
+  const state = { target, guard, targets: new Map(), frameSessions: new Map(), pending: new Set(),
+    error: null, disposed: false };
+  const listener = (source, method, params) => onEvent(state, { source, method, params });
+  chrome.debugger.onEvent.addListener(listener);
+  return {
+    initialize: async () => { autoAttach(state); await settle(state); },
+    documents: () => documents(state),
+    listen: (frameId, listener) => listen(state, frameId, listener),
+    debuggee: (frameId) => debuggee(state, frameId),
+    relatedFrames: (frameId) => relatedFrames(state, frameId),
+    send: (method, params = {}, frameId) => {
+      if (frameId && !state.frameSessions.has(frameId)) throw new Error(t('frameChanged'));
+      return command(state, { method, params, sessionId: state.frameSessions.get(frameId) });
+    },
+    dispose: () => dispose(state, listener),
+  };
+}
+
+async function dispose(state, listener) {
+  state.disposed = true;
+  chrome.debugger.onEvent.removeListener(listener);
+  await Promise.all([...state.pending]);
+  try {
+    // Disabling root auto-attach releases child frames/workers and their protocol domains.
+    // Reset root log domains too so the next read receives Chrome's retained log replay.
+    await chrome.debugger.sendCommand(state.target, 'Target.setAutoAttach', {
+      autoAttach: false, waitForDebuggerOnStart: false, flatten: true,
+    });
+    await chrome.debugger.sendCommand(state.target, 'Runtime.disable');
+    await chrome.debugger.sendCommand(state.target, 'Log.disable');
+    return true;
+  } catch {
+    // Cancellation may already have detached. Failed cleanup must not retain the connection.
+    return false;
+  }
+}
+
+function debuggee(state, frameId) {
+  if (!state.frameSessions.has(frameId)) throw new Error(t('frameChanged'));
+  const sessionId = state.frameSessions.get(frameId);
+  return { ...state.target, ...(sessionId ? { sessionId } : {}) };
+}
+
+function relatedFrames(state, frameId) {
+  const { sessionId } = debuggee(state, frameId);
+  return [...state.frameSessions].filter(([, owner]) => owner === sessionId).map(([id]) => id);
+}
+
+function listen(state, frameId, listener) {
+  if (!state.frameSessions.has(frameId)) throw new Error(t('frameChanged'));
+  const sessionId = state.frameSessions.get(frameId);
+  const handler = (source, method, params) => {
+    if (source.tabId === state.target.tabId && source.sessionId === sessionId) listener(method, params);
+  };
+  chrome.debugger.onEvent.addListener(handler);
+  return () => chrome.debugger.onEvent.removeListener(handler);
+}
+
+function onEvent(state, { source, method, params }) {
+  if (source.tabId !== state.target.tabId) return;
+  if (method === 'Target.detachedFromTarget') {
+    state.targets.delete(params.sessionId);
+    for (const [frameId, sessionId] of state.frameSessions) {
+      if (sessionId === params.sessionId) state.frameSessions.delete(frameId);
+    }
+    return;
+  }
+  if (method !== 'Target.attachedToTarget' || params.targetInfo.type !== 'iframe') return;
+  if (state.targets.has(params.sessionId)) return;
+  if (state.targets.size >= MAX_TARGETS) { state.error = new Error(t('tooManyFrames')); return; }
+  state.targets.set(params.sessionId, params.targetInfo.targetId);
+  // Auto-attach is not recursive; nested cross-site frames need it enabled in each child session.
+  autoAttach(state, params.sessionId);
+}
+
+function autoAttach(state, sessionId) {
+  const task = command(state, { method: 'Target.setAutoAttach', params: AUTO_ATTACH, sessionId })
+    .catch(() => { state.error = new Error(t('frameConnectionChanged')); })
+    .finally(() => state.pending.delete(task));
+  state.pending.add(task);
+}
+
+async function settle(state) {
+  while (state.pending.size) await Promise.all([...state.pending]);
+  if (state.error) throw state.error;
+}
+
+async function command(state, { method, params = {}, sessionId }) {
+  await state.guard();
+  if (state.disposed) throw new Error(t('browserActionEnded'));
+  return chrome.debugger.sendCommand({ ...state.target, ...(sessionId ? { sessionId } : {}) }, method, params);
+}
+
+async function documents(state) {
+  await settle(state);
+  const result = new Map();
+  state.frameSessions.clear();
+  const root = await command(state, { method: 'Page.getFrameTree' });
+  addTree(state, result, { tree: root.frameTree });
+  for (const sessionId of state.targets.keys()) {
+    const child = await command(state, { method: 'Page.getFrameTree', sessionId });
+    addTree(state, result, { tree: child.frameTree, sessionId });
+  }
+  return [...result.values()];
+}
+
+function addTree(state, result, { tree, sessionId }) {
+  const pending = [tree];
+  while (pending.length) {
+    const current = pending.pop();
+    result.set(current.frame.id, current.frame);
+    state.frameSessions.set(current.frame.id, sessionId);
+    pending.push(...(current.childFrames ?? []));
+  }
+}

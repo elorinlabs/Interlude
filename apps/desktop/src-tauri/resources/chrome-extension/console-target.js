@@ -1,0 +1,40 @@
+import { runtimeCollector, browserCollector } from './console-runtime.js';
+import { t } from './i18n.js';
+
+export function listenTarget(target, listener) {
+  const handler = (source, method, params) => {
+    if (source.tabId !== target.tabId || source.targetId !== target.targetId) return;
+    if (source.sessionId === target.sessionId) listener(method, params);
+  };
+  chrome.debugger.onEvent.addListener(handler);
+  return () => chrome.debugger.onEvent.removeListener(handler);
+}
+
+export async function readWorkerLogs(connection, options) {
+  const { target, guard, worker } = connection;
+  const runtime = runtimeCollector({ worker, add: options.add, send: async (method, params) => {
+    await guard();
+    return chrome.debugger.sendCommand(target, method, params);
+  } });
+  const browser = browserCollector(options.add, worker);
+  const includeRuntime = !options.source || ['all', 'worker'].includes(options.source);
+  const dispose = listenTarget(target, (method, params) => {
+    if (includeRuntime) runtime.onEvent(method, params);
+    if (options.source !== 'worker') browser(method, params);
+  });
+  try {
+    await guard();
+    if (includeRuntime) await chrome.debugger.sendCommand(target, 'Runtime.enable');
+    await guard();
+    if (options.source !== 'worker') await chrome.debugger.sendCommand(target, 'Log.enable');
+    await runtime.flush();
+    await guard();
+    if (runtime.contextChanged()) throw new Error(t('workerChanged'));
+  } finally {
+    dispose();
+    // Retained connections need a fresh replay on the next read. A cleanup failure propagates
+    // so the driver closes the connection instead of retaining enabled log domains.
+    await chrome.debugger.sendCommand(target, 'Runtime.disable');
+    await chrome.debugger.sendCommand(target, 'Log.disable');
+  }
+}

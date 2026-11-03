@@ -1,0 +1,134 @@
+#[derive(Debug, thiserror::Error)]
+pub(super) enum GuiError {
+    #[error("这条补充消息暂不支持单独删除，以免删除之前的消息。")]
+    MessageDeleteBoundary,
+    #[error("暂时无法加载 Coze 内容，请先从左侧打开 Coze 并发布需要使用的内容。")]
+    CozeUnavailable,
+    #[error("引用的对话暂时无法读取，请重新选择后发送；每条消息最多引用 8 个其他对话。")]
+    ConversationReference,
+    #[error("暂时无法读取对话的上下文设置，请重试。")]
+    ContextSettings,
+    #[error("视频暂时无法读取，请确认文件可访问，且格式为 MP4、MOV 或 WebM。")]
+    VideoPreview,
+    #[error("文件超过当前传输大小上限。")]
+    FileTooLarge,
+    #[error("文件已更改，请重新打开。")]
+    FileChanged,
+    #[error("SOURCE_CHANGED")]
+    FileSourceChanged,
+    #[error("文件连接已过期，请重新打开。")]
+    FileExpired,
+    #[error("正在传输的文件较多，请稍后重试。")]
+    FileBusy,
+    #[error("文件暂时无法预览，请确认文件可访问、内容为文本且未超过查看上限。")]
+    TextPreview,
+    #[error("文件暂时无法读取，请确认文件存在且有读取权限。")]
+    FileRead,
+    #[error("无法创建补丁，请确认项目和提交仍然存在后重试。")]
+    GitPatch,
+    #[error("文件暂时无法添加，请确认单个文件不超过 2 MB 后重试。")]
+    Attachment,
+    #[error("暂时无法读取当前项目文件，请确认项目仍可访问。")]
+    ProjectFiles,
+    #[error("文件已在其他地方修改。请先复制你的修改，再重新加载文件。")]
+    ProjectFileConflict,
+    #[error("未能保存文件，请确认文件可写后重试。")]
+    ProjectFileWrite,
+    #[error(transparent)]
+    ProjectEntry(super::project_entries::Error),
+    #[error("暂时无法读取文件夹，请确认文件夹仍可访问。")]
+    ProjectDirectories,
+    #[error("图片暂时无法显示，请确认文件可访问且图片格式受支持。")]
+    ImagePreview,
+    #[error("图片过大，暂时无法预览。请缩小尺寸后重试。")]
+    ImagePreviewResources,
+    #[error("图片无法读取，请重新选择后发送。")]
+    ImageInput,
+    #[error("图片过大，请缩小图片或减少图片后发送。")]
+    ImageInputTooLarge,
+    #[error("这条对话或其子对话仍有任务未完成，请等待结束并处理待发送消息后再删除。")]
+    Busy,
+    #[error("未能删除对话，请稍后重试。")]
+    Delete,
+    #[error("部分子对话的记录不完整，请先在会话管理中恢复后再删除。")]
+    DeleteMissingHistory,
+    #[error("关联子对话已变化，请刷新后重新删除。")]
+    DeleteChanged,
+    #[error("请先下载 Codex，即可开始对话。")]
+    Executable,
+    #[error("请选择有效的本地文件夹。")]
+    Directory,
+    #[error("暂时无法准备对话，请稍后重试。")]
+    Workspace,
+    #[error("client.gitActivity.operationBusy")]
+    WorkspaceBusy,
+    #[error(transparent)]
+    WorkspaceConflict(super::workspace_activity::Conflict),
+    #[error("对话请求无效，请刷新后重试。")]
+    InvalidRequest,
+    #[error("模型列表暂时无法读取，请点击重试。")]
+    ModelCatalog,
+    #[error("Codex 已断开连接，请重新连接后继续。")]
+    Disconnected,
+    #[error("Codex 响应超时，请检查连接状态。")]
+    Timeout,
+    #[error("Codex 未能完成操作，请检查当前账户、模型和 Codex 配置。")]
+    Rpc,
+    #[error("对话正在准备，请稍后重试。")]
+    ThreadNotReady,
+    #[error("Codex 暂时无法启动，请检查 Codex 配置后重试。")]
+    Startup,
+    #[error("暂时无法访问 GitHub，请检查网络后重试。")]
+    Release,
+    #[error("下载文件校验未通过，请重新下载。")]
+    Integrity,
+    #[error("Codex 安装意外中断，请重启应用后重试。")]
+    Install,
+    #[error("安装所在磁盘空间不足，请释放空间后重试。")]
+    InstallDiskFull,
+    #[error("没有权限访问安装文件，请检查文件夹权限后重试。")]
+    InstallPermission,
+    #[error("安装文件被其他程序占用，请关闭相关程序后重试。")]
+    InstallInUse,
+    #[error("无法创建安装文件夹，请检查文件夹是否可写后重试。")]
+    InstallDirectory,
+    #[error("无法写入安装文件，请检查磁盘是否可写后重试。")]
+    InstallWrite,
+    #[error("无法读取安装文件，请重新选择安装包或重新下载。")]
+    InstallRead,
+    #[error("安装包无法解压，可能已损坏。请重新下载完整安装包。")]
+    InstallUnpack,
+    #[error("安装包缺少 Codex 启动文件，请下载适合当前电脑的完整安装包。")]
+    InstallMissingExecutable,
+    #[error("无法读取已安装版本的信息，请在日志诊断中查看详情。")]
+    InstallStateRead,
+    #[error("无法保存安装结果，请检查磁盘是否可写后重试。")]
+    InstallStateWrite,
+    #[error("所选文件无法读取，请重新选择下载好的文件。")]
+    ImportFile,
+    #[error("安装包无效或不适合当前电脑，请重新下载完整安装包。")]
+    ImportPackage,
+    #[error("版本校验文件无效，请从引导中的官方链接重新下载。")]
+    ImportMetadata,
+    #[error("安装包与校验文件不匹配，请下载同一版本、适合当前电脑的文件。")]
+    ImportMismatch,
+    #[error("此版本已安装，或已有更新版本。请下载最新版本后再导入。")]
+    ImportVersion,
+}
+
+impl GuiError {
+    pub(super) fn from_rpc(error: &serde_json::Value) -> Self {
+        let message = error["message"].as_str().unwrap_or_default();
+        // A first turn can be acknowledged before the CLI flushes its rollout metadata.
+        if message.starts_with("failed to read thread:")
+            && message.contains("rollout at ")
+            && message.ends_with(" is empty")
+        {
+            Self::ThreadNotReady
+        } else {
+            Self::Rpc
+        }
+    }
+}
+
+pub(super) type Result<T> = std::result::Result<T, GuiError>;

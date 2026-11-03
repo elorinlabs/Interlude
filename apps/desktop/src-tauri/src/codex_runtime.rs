@@ -1,0 +1,422 @@
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+use std::{
+    collections::HashSet,
+    sync::{
+        atomic::{AtomicU64, Ordering},
+        Mutex, OnceLock,
+    },
+    thread,
+    time::Duration,
+};
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+use reqwest::blocking::Client;
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+use serde::Deserialize;
+use tauri::AppHandle;
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+use tauri::Emitter;
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+use std::path::Path;
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+const OFFICIAL_MODEL_REFRESH_TIMEOUT: Duration = Duration::from_secs(20);
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+const HIDDEN_MODEL_VISIBILITY: &str = "hide";
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+static MODEL_REFRESH_GENERATION: AtomicU64 = AtomicU64::new(0);
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+static MODEL_REFRESH_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+static CODEX_RUNTIME_APP: OnceLock<AppHandle> = OnceLock::new();
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+mod model_retry;
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+mod official_refresh;
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+mod renderer_refresh;
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+pub(crate) use renderer_refresh::refresh_after_launch;
+
+pub(crate) struct ModelRefreshRequest {
+    pub(crate) display_names: std::collections::BTreeMap<String, String>,
+    pub(crate) models: Vec<String>,
+    pub(crate) fast_mode_models: Vec<String>,
+    pub(crate) image_input_models: Vec<String>,
+    pub(crate) model_reasoning_efforts: crate::models::ModelReasoningEfforts,
+    pub(crate) selected_model: String,
+    pub(crate) reasoning_profile: crate::providers::ReasoningEffortProfile,
+}
+
+/// Selects whether the renderer uses configured Provider models or the active upstream catalog.
+pub(crate) enum ModelRefreshSource {
+    Configured(ModelRefreshRequest),
+    Upstream { selected_model: String },
+}
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+#[derive(Deserialize)]
+struct OfficialModelsResponse {
+    #[serde(default)]
+    models: Vec<OfficialModel>,
+}
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+#[derive(Deserialize)]
+struct OfficialModel {
+    slug: String,
+    #[serde(default)]
+    visibility: Option<String>,
+    #[serde(default)]
+    input_modalities: Vec<String>,
+    #[serde(default)]
+    supported_reasoning_levels: Vec<OfficialReasoningLevel>,
+    #[serde(default)]
+    additional_speed_tiers: Vec<String>,
+    #[serde(default)]
+    service_tiers: Vec<OfficialServiceTier>,
+}
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+#[derive(Deserialize)]
+struct OfficialServiceTier {
+    id: String,
+}
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+#[derive(Deserialize)]
+struct OfficialReasoningLevel {
+    effort: crate::models::ReasoningEffort,
+}
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+#[derive(Default)]
+struct OfficialCatalogBuilder {
+    seen_models: HashSet<String>,
+    models: Vec<String>,
+    image_input_models: Vec<String>,
+    model_reasoning_efforts: crate::models::ModelReasoningEfforts,
+    fast_mode_models: Vec<String>,
+}
+
+/// Initializes the managed Codex renderer channel independently from Dream Skin.
+pub(crate) fn setup(app: &AppHandle) -> Result<(), String> {
+    #[cfg(any(target_os = "windows", target_os = "macos"))]
+    {
+        let _ = CODEX_RUNTIME_APP.set(app.clone());
+        crate::dream_skin_native::setup_runtime(app)
+    }
+    #[cfg(not(any(target_os = "windows", target_os = "macos")))]
+    {
+        let _ = app;
+        Ok(())
+    }
+}
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+pub(crate) fn notify_service_tier_changed() {
+    let Some(app) = CODEX_RUNTIME_APP.get() else {
+        return;
+    };
+    if let Err(error) = app.emit("providers-changed", ()) {
+        eprintln!("Failed to publish the Codex service tier change: {error}");
+    }
+}
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+pub(crate) fn runtime_app_handle() -> Option<AppHandle> {
+    CODEX_RUNTIME_APP.get().cloned()
+}
+
+pub(crate) fn refresh_usage_summary() {
+    #[cfg(any(target_os = "windows", target_os = "macos"))]
+    crate::dream_skin_native::notify_usage_summary_changed();
+}
+
+/// Relaunches Codex, enabling the renderer channel only when enhancements are allowed.
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+pub(crate) fn restart_managed_session(executable: Option<&Path>) -> Result<(), String> {
+    crate::dream_skin_native::restart_runtime_session(executable)
+}
+
+/// Reserve a validated runtime before a manual restart closes the current client.
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+pub(crate) fn prepare_managed_session(
+    executable: Option<&Path>,
+) -> Result<crate::dream_skin_native::PreparedRuntimeSession, String> {
+    crate::dream_skin_native::prepare_runtime_session(executable)
+}
+
+/// Refreshes Codex's model and config caches through the managed renderer channel.
+pub(crate) fn refresh_models(source: ModelRefreshSource) {
+    #[cfg(any(target_os = "windows", target_os = "macos"))]
+    {
+        schedule_model_refresh(source);
+    }
+    #[cfg(not(any(target_os = "windows", target_os = "macos")))]
+    {
+        let _ = source;
+    }
+}
+
+/// Refreshes Codex's model and config caches before returning to the caller.
+pub(crate) fn refresh_models_blocking(source: ModelRefreshSource) {
+    #[cfg(any(target_os = "windows", target_os = "macos"))]
+    {
+        let generation = next_model_refresh_generation();
+        apply_model_refresh(generation, resolve_model_refresh(source));
+    }
+    #[cfg(not(any(target_os = "windows", target_os = "macos")))]
+    {
+        let _ = source;
+    }
+}
+
+/// Loads the current official catalog through the local proxy before refreshing
+/// Codex. This avoids restoring a stale app-server model cache after a Provider switch.
+pub(crate) fn refresh_official_models(selected_model: String) {
+    #[cfg(any(target_os = "windows", target_os = "macos"))]
+    {
+        let generation = next_model_refresh_generation();
+        let _ = thread::Builder::new()
+            .name("codex-official-model-refresh".to_string())
+            .spawn(move || official_refresh::refresh(generation, selected_model));
+    }
+    #[cfg(not(any(target_os = "windows", target_os = "macos")))]
+    {
+        let _ = selected_model;
+    }
+}
+
+/// Loads the official catalog and refreshes Codex before returning to the caller.
+pub(crate) fn refresh_official_models_blocking(selected_model: String) {
+    #[cfg(any(target_os = "windows", target_os = "macos"))]
+    {
+        let generation = next_model_refresh_generation();
+        official_refresh::refresh(generation, selected_model);
+    }
+    #[cfg(not(any(target_os = "windows", target_os = "macos")))]
+    {
+        let _ = selected_model;
+    }
+}
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+fn schedule_model_refresh(source: ModelRefreshSource) {
+    let generation = next_model_refresh_generation();
+    let _ = thread::Builder::new()
+        .name("codex-model-picker-refresh".to_string())
+        .spawn(move || apply_model_refresh(generation, resolve_model_refresh(source)));
+}
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+fn resolve_model_refresh(source: ModelRefreshSource) -> ModelRefreshRequest {
+    match source {
+        ModelRefreshSource::Configured(request) => request,
+        ModelRefreshSource::Upstream { selected_model } => {
+            load_official_model_refresh_payload(selected_model.clone()).unwrap_or_else(|error| {
+                eprintln!("Failed to load the upstream Codex model catalog: {error}");
+                upstream_model_refresh_reset(selected_model)
+            })
+        }
+    }
+}
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+fn upstream_model_refresh_reset(selected_model: String) -> ModelRefreshRequest {
+    // An empty list removes a previous Provider picker override so Codex can retry the upstream.
+    // Injecting the default model here would keep hiding every other model after recovery.
+    ModelRefreshRequest {
+        display_names: Default::default(),
+        models: Vec::new(),
+        fast_mode_models: Vec::new(),
+        image_input_models: Vec::new(),
+        model_reasoning_efforts: crate::models::ModelReasoningEfforts::new(),
+        selected_model,
+        reasoning_profile: crate::providers::ReasoningEffortProfile::Standard,
+    }
+}
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+fn next_model_refresh_generation() -> u64 {
+    MODEL_REFRESH_GENERATION.fetch_add(1, Ordering::AcqRel) + 1
+}
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+fn apply_model_refresh(generation: u64, request: ModelRefreshRequest) {
+    if !crate::client_integration::enabled_for(crate::local_proxy::is_running()) {
+        return;
+    }
+    let _guard = MODEL_REFRESH_LOCK
+        .get_or_init(|| Mutex::new(()))
+        .lock()
+        .unwrap_or_else(|error| error.into_inner());
+    renderer_refresh::apply(generation, &request);
+}
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+fn load_official_model_refresh_payload(
+    selected_model: String,
+) -> Result<ModelRefreshRequest, String> {
+    fetch_model_refresh_catalog(selected_model, OFFICIAL_MODEL_REFRESH_TIMEOUT)
+        .map(|loaded| loaded.request)
+}
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+struct LoadedOfficialCatalog {
+    request: ModelRefreshRequest,
+    catalog: serde_json::Value,
+    etag: Option<String>,
+    client_version: String,
+}
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+fn fetch_model_refresh_catalog(
+    selected_model: String,
+    timeout: Duration,
+) -> Result<LoadedOfficialCatalog, String> {
+    let client_version = CODEX_RUNTIME_APP
+        .get()
+        .and_then(|app| crate::storage::resolve_paths(app).ok())
+        .map(|paths| crate::official_models::model_client_version(&paths))
+        .unwrap_or_else(|| crate::official_models::MIN_CODEX_MODEL_CLIENT_VERSION.to_string());
+    let url = format!(
+        "http://{}:{}/v1/models?client_version={}",
+        crate::providers::LOCAL_PROXY_HOST,
+        crate::providers::LOCAL_PROXY_PORT,
+        client_version
+    );
+    let response = model_catalog_client(timeout)?
+        .get(url)
+        .bearer_auth(crate::providers::LOCAL_PROXY_TOKEN)
+        .send()
+        .and_then(reqwest::blocking::Response::error_for_status)
+        .map_err(|error| format!("Official model catalog request failed: {error}"))?;
+    parse_official_model_catalog(response, selected_model, client_version)
+}
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+fn model_catalog_client(timeout: Duration) -> Result<Client, String> {
+    // This client only reads our local model endpoint; upstream routing belongs to that endpoint.
+    Client::builder()
+        .no_proxy()
+        .timeout(timeout)
+        .build()
+        .map_err(|error| format!("Failed to create the model catalog client: {error}"))
+}
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+fn parse_official_model_catalog(
+    response: reqwest::blocking::Response,
+    selected_model: String,
+    client_version: String,
+) -> Result<LoadedOfficialCatalog, String> {
+    let etag = response
+        .headers()
+        .get(reqwest::header::ETAG)
+        .and_then(|value| value.to_str().ok())
+        .map(str::to_string);
+    let catalog = response
+        .json::<serde_json::Value>()
+        .map_err(|error| format!("Official model catalog is invalid: {error}"))?;
+    let request = model_refresh_from_value(&catalog, selected_model)?;
+    Ok(LoadedOfficialCatalog {
+        request,
+        catalog,
+        etag,
+        client_version,
+    })
+}
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+fn model_refresh_from_value(
+    catalog: &serde_json::Value,
+    selected_model: String,
+) -> Result<ModelRefreshRequest, String> {
+    let catalog = serde_json::from_value(catalog.clone())
+        .map_err(|error| format!("Official model catalog is invalid: {error}"))?;
+    official_model_refresh_payload(catalog, selected_model)
+}
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+fn official_model_refresh_payload(
+    catalog: OfficialModelsResponse,
+    selected_model: String,
+) -> Result<ModelRefreshRequest, String> {
+    let mut builder = OfficialCatalogBuilder::default();
+    for model in catalog.models {
+        builder.append(model);
+    }
+    builder.finish(selected_model)
+}
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+impl OfficialCatalogBuilder {
+    fn append(&mut self, model: OfficialModel) {
+        if model.visibility.as_deref() == Some(HIDDEN_MODEL_VISIBILITY) {
+            return;
+        }
+        let slug = model.slug.trim().to_string();
+        if slug.is_empty() || !self.seen_models.insert(slug.clone()) {
+            return;
+        }
+        if model.input_modalities.iter().any(|value| value == "image") {
+            self.image_input_models.push(slug.clone());
+        }
+        if model
+            .additional_speed_tiers
+            .iter()
+            .any(|tier| tier == "fast")
+            || model.service_tiers.iter().any(|tier| tier.id == "priority")
+        {
+            self.fast_mode_models.push(slug.clone());
+        }
+        let efforts = unique_reasoning_efforts(model.supported_reasoning_levels);
+        if !efforts.is_empty() {
+            self.model_reasoning_efforts.insert(slug.clone(), efforts);
+        }
+        self.models.push(slug);
+    }
+
+    fn finish(self, selected_model: String) -> Result<ModelRefreshRequest, String> {
+        if self.models.is_empty() {
+            return Err("Official model catalog is empty".to_string());
+        }
+        Ok(ModelRefreshRequest {
+            display_names: Default::default(),
+            models: self.models,
+            fast_mode_models: self.fast_mode_models,
+            image_input_models: self.image_input_models,
+            model_reasoning_efforts: self.model_reasoning_efforts,
+            selected_model,
+            reasoning_profile: crate::providers::ReasoningEffortProfile::Standard,
+        })
+    }
+}
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+fn unique_reasoning_efforts(
+    levels: Vec<OfficialReasoningLevel>,
+) -> Vec<crate::models::ReasoningEffort> {
+    levels
+        .into_iter()
+        .map(|level| level.effort)
+        .fold(Vec::new(), |mut efforts, effort| {
+            if !efforts.contains(&effort) {
+                efforts.push(effort);
+            }
+            efforts
+        })
+}
+
+#[cfg(all(test, any(target_os = "windows", target_os = "macos")))]
+mod tests;
+
+#[cfg(all(test, any(target_os = "windows", target_os = "macos")))]
+mod proxy_tests;

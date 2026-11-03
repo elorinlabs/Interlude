@@ -1,0 +1,9 @@
+{
+  "ios": {
+    "NSCameraUsageDescription": "Interlude が写真を撮影し、QR コードを読み取ることを許可します",
+    "NSPhotoLibraryUsageDescription": "チャットで送信する写真を Interlude が選択することを許可します",
+    "NSPhotoLibraryAddUsageDescription": "Interlude が画像を写真ライブラリに保存することを許可します",
+    "NSMotionUsageDescription": "端末の向きに合わせて Interlude が画像を回転することを許可します",
+    "NSLocalNetworkUsageDescription": "チャットやリモートデスクトップのため、Interlude が同じネットワーク上のパソコンに接続することを許可します"
+  }
+}

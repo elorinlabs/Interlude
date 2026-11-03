@@ -1,0 +1,19 @@
+html.settings { width: 100%; height: 100%; overflow-y: auto; }
+.settings body { width: 100%; min-height: 100%; padding: 20px 16px;
+  background: var(--panel-canvas); color: var(--panel-ink); }
+.settings header { margin-bottom: 16px; }
+.settings h1 { font-size: 20px; }
+.settings h2 { color: var(--panel-ink); }
+.settings header p, .settings .hint { color: var(--panel-muted); }
+.settings .name-field { margin: 20px 0; }
+.settings button { border-radius: 14px; background: var(--panel-accent); min-height: 40px; }
+.settings button.secondary { background: var(--panel-accent-soft); color: var(--panel-accent); }
+.settings input { border-radius: 12px; border-color: var(--panel-border);
+  background: var(--panel-surface); color: var(--panel-ink); min-height: 40px; }
+.settings button:focus-visible, .settings input:focus-visible { outline-color: var(--panel-accent); }
+.settings .site-access { padding: 14px; border-color: var(--panel-border); border-radius: 18px;
+  background: var(--panel-surface); }
+.settings .site-access input { accent-color: var(--panel-accent); min-height: 0; }
+.settings .sites { margin: 16px 0; }
+.settings .row { gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--panel-border); }
+.settings [role="alert"] { max-width: 400px; color: #a8392e; background: #fcece8; }
