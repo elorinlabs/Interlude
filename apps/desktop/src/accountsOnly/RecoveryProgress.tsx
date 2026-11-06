@@ -6,7 +6,7 @@ const phases = ['opening', 'credentials', 'callback', 'verifying'] as const;
 export function RecoveryProgress({email,count,stage,elapsed,verifying,t,onStop}:{
   email:string;count:number;stage:string;elapsed:number;verifying:boolean;t:Translate;onStop:()=>void;
 }) {
-  const current=verifying?3:stage==='callback'?2:['email','password','totp'].includes(stage)?1:0;
+  const current=verifying?3:stage==='callback'?2:['email','password','totpPage','totp'].includes(stage)?1:0;
   const attention=stage==='needsAttention';
   return <section className="recovery-progress glass-operation" aria-label={t('accountsOnly.health.reauthorize')}>
     <div className="operation-heading"><ShieldCheck size={18}/><div>

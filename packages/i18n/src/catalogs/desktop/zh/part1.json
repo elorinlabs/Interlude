@@ -534,5 +534,6 @@
   "accountsOnly.appearance.original": "原色 · 柠檬冰蓝",
   "accountsOnly.appearance.navy": "墨蓝商务",
   "accountsOnly.appearance.sand": "暖砂极简",
-  "accountsOnly.appearance.sage": "松绿雅致"
+  "accountsOnly.appearance.sage": "松绿雅致",
+  "accountsOnly.recovery.stage.totpPage": "已进入验证器验证页面"
 }

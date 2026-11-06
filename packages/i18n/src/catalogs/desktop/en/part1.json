@@ -534,5 +534,6 @@
   "accountsOnly.appearance.original": "Original · Lemon ice",
   "accountsOnly.appearance.navy": "Navy office",
   "accountsOnly.appearance.sand": "Warm sand",
-  "accountsOnly.appearance.sage": "Quiet sage"
+  "accountsOnly.appearance.sage": "Quiet sage",
+  "accountsOnly.recovery.stage.totpPage": "Authenticator verification page opened"
 }

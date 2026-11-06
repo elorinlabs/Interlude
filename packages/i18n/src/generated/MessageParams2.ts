@@ -92,6 +92,7 @@ export interface MessageParams2 {
   "accountsOnly.recovery.stage.opening": Record<string, never>;
   "accountsOnly.recovery.stage.password": Record<string, never>;
   "accountsOnly.recovery.stage.totp": Record<string, never>;
+  "accountsOnly.recovery.stage.totpPage": Record<string, never>;
   "accountsOnly.recovery.stage.verifying": Record<string, never>;
   "accountsOnly.recovery.stepElapsed": { "seconds": string | number };
   "accountsOnly.recovery.stepWaiting": { "seconds": string | number };
@@ -199,5 +200,4 @@ export interface MessageParams2 {
   "client.accounts.accounts.5088a9": Record<string, never>;
   "client.accounts.addAccount": Record<string, never>;
   "client.accounts.alias": Record<string, never>;
-  "client.accounts.aliasHint": Record<string, never>;
 }

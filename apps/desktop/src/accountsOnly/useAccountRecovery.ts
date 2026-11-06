@@ -54,7 +54,7 @@ export function useAccountRecovery(notify:(message:string)=>void,t:Translate) {
     let unlistenProgress:UnlistenFn|undefined;
     void listen<{accountId:string;stage:string}>('account-recovery-progress',event=>{
       if(!alive||event.payload.accountId!==current||completed)return;
-      if(!['email','password','totp','callback','needsAttention'].includes(event.payload.stage))return;
+      if(!['email','password','totpPage','totp','callback','needsAttention'].includes(event.payload.stage))return;
       setStage(event.payload.stage);stageAt.current=Date.now();setElapsed(0);
     }).then(stopListening=>{if(alive)unlistenProgress=stopListening;else stopListening();})
       .catch(()=>{if(alive)notify(t('accountsOnly.recovery.progressUnavailable'));});

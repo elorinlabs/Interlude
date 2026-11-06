@@ -187,7 +187,7 @@ fn open_embedded_login_window<R: Runtime + 'static>(
             .min_inner_size(420.0, 620.0)
             .center()
             .incognito(true)
-            .visible(automatic.is_none())
+            .visible(true)
             .on_navigation(move|url|{
                 if url.scheme()=="interlude-recovery" {
                     if let (Some(id),Some(window))=(&navigation_account,navigation_app.get_webview_window("codex-login")) {
@@ -200,7 +200,7 @@ fn open_embedded_login_window<R: Runtime + 'static>(
                             },
                             _=>"needsAttention",
                         };
-                        if matches!(stage,"email"|"password"|"totp"|"callback"|"needsAttention") {
+                        if matches!(stage,"email"|"password"|"totpPage"|"totp"|"callback"|"needsAttention") {
                             let _=navigation_app.emit("account-recovery-progress",json!({"accountId":id,"stage":stage}));
                         }
                         if stage=="needsAttention" {let _=window.show();let _=window.set_focus();}
@@ -222,7 +222,8 @@ fn open_embedded_login_window<R: Runtime + 'static>(
                 }
             })
             .build()?;
-            if automatic.is_none(){window.show()?;window.set_focus()?;}
+            window.show()?;
+            window.set_focus()?;
             window.eval(redirect_script)?;
             Ok::<(), tauri::Error>(())
         })();

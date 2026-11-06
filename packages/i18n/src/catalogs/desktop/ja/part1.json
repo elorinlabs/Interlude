@@ -534,5 +534,6 @@
   "accountsOnly.appearance.original": "オリジナル · レモンアイス",
   "accountsOnly.appearance.navy": "ネイビー",
   "accountsOnly.appearance.sand": "ウォームサンド",
-  "accountsOnly.appearance.sage": "セージ"
+  "accountsOnly.appearance.sage": "セージ",
+  "accountsOnly.recovery.stage.totpPage": "認証アプリの確認画面を表示中"
 }

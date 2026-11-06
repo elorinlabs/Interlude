@@ -534,5 +534,6 @@
   "accountsOnly.appearance.original": "Оригинал · Лимон и лёд",
   "accountsOnly.appearance.navy": "Деловой синий",
   "accountsOnly.appearance.sand": "Тёплый песок",
-  "accountsOnly.appearance.sage": "Шалфей"
+  "accountsOnly.appearance.sage": "Шалфей",
+  "accountsOnly.recovery.stage.totpPage": "Открыта страница проверки аутентификатора"
 }
